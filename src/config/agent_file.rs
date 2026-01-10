@@ -1,19 +1,13 @@
 use {
-    super::{
-        GenericItem,
-        GenericSet,
-        agent::*,
-        hook::HookDoc,
-        mcp::CustomToolConfigDoc,
-        native::NativeToolsDoc,
-    },
+    super::{GenericItem, GenericSet, agent::*, hook::HookDoc},
     crate::{
         Fs,
-        config::{ConfigResult, GenericVec},
+        agent::CustomToolConfig,
+        config::{ConfigResult, GenericVec, native::NativeTools},
     },
     facet::Facet,
     facet_kdl as kdl,
-    std::path::Path,
+    std::{collections::HashMap, path::Path},
 };
 
 #[derive(Facet, Copy, Default, Clone, Debug, PartialEq, Eq)]
@@ -52,14 +46,12 @@ pub struct KdlAgentFileDoc {
     #[facet(kdl::child, default)]
     pub(super) hook: Option<HookDoc>,
 
-    #[facet(kdl::children, default)]
-    pub(super) mcp: Vec<CustomToolConfigDoc>,
+    pub(super) mcp: HashMap<String, CustomToolConfig>,
 
     #[facet(kdl::children, default)]
     pub(super) alias: Vec<GenericVec>,
 
-    #[facet(kdl::child, default)]
-    pub native_tool: NativeToolsDoc,
+    pub native_tool: NativeTools,
 
     #[facet(kdl::children, default)]
     pub(super) tool_setting: Vec<ToolSetting>,
@@ -93,7 +85,6 @@ impl KdlAgentDoc {
             allowed_tools: file_source.allowed_tools,
             model: file_source.model,
             hook: file_source.hook,
-            mcp: file_source.mcp,
             alias: file_source.alias,
             native_tool: file_source.native_tool,
             tool_setting: file_source.tool_setting,

@@ -704,6 +704,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "facet-toml"
+version = "0.42.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "da384a5e49b363a0cce72e72040e55dc66c160039e3681a1d926ae33286b3427"
+dependencies = [
+ "facet-core",
+ "facet-format",
+ "facet-reflect",
+ "miette",
+ "toml_parser",
+]
+
+[[package]]
 name = "fancy-regex"
 version = "0.16.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1286,7 +1299,7 @@ checksum = "81a29e7b50079ff44549f68c0becb1c73d7f6de2a4ea952da77966daf3d4761e"
 dependencies = [
  "miette",
  "num",
- "winnow",
+ "winnow 0.6.24",
 ]
 
 [[package]]
@@ -1300,6 +1313,7 @@ dependencies = [
  "enum-iterator",
  "facet",
  "facet-kdl",
+ "facet-toml",
  "futures",
  "indoc",
  "jsonschema",
@@ -2395,6 +2409,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "toml_parser"
+version = "1.0.6+spec-1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a3198b4b0a8e11f09dd03e133c0280504d0801269e9afa46362ffde1cbeebf44"
+dependencies = [
+ "winnow 0.7.14",
+]
+
+[[package]]
 name = "tower"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2971,6 +2994,12 @@ checksum = "c8d71a593cc5c42ad7876e2c1fda56f314f3754c084128833e64f1345ff8a03a"
 dependencies = [
  "memchr",
 ]
+
+[[package]]
+name = "winnow"
+version = "0.7.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a5364e9d77fcdeeaa6062ced926ee3381faa2ee02d3eb83a5c27a8825540829"
 
 [[package]]
 name = "wit-bindgen"

@@ -1,7 +1,6 @@
 mod agent;
 mod agent_file;
 mod hook;
-mod mcp;
 mod merge;
 mod native;
 
@@ -10,6 +9,7 @@ use {
     crate::Fs,
     facet::Facet,
     facet_kdl as kdl,
+    facet_toml as toml,
     miette::IntoDiagnostic,
     std::{
         collections::{HashMap, HashSet},
@@ -65,13 +65,18 @@ pub(super) struct IntDoc {
 }
 
 #[cfg(test)]
-fn print_error(e: &facet_kdl::KdlDeserializeError) {
-    // let d = e.into_diagnostics();
-    eprintln!("\n=== Miette render ===");
-    let mut output = String::new();
-    let handler = miette::GraphicalReportHandler::new_themed(miette::GraphicalTheme::unicode());
-    handler.render_report(&mut output, e).unwrap();
-    eprintln!("{}", output);
+fn print_error(e: &crate::Error) {
+    match e {
+        crate::Error::TomlDeserializeError(err) => {
+            eprintln!("\n=== Miette render ===");
+            let mut output = String::new();
+            let handler =
+                miette::GraphicalReportHandler::new_themed(miette::GraphicalTheme::unicode());
+            handler.render_report(&mut output, err).unwrap();
+            eprintln!("{}", output);
+        }
+        _ => {}
+    };
 }
 
 pub(super) fn split_newline(list: Vec<GenericItem>) -> HashSet<String> {
@@ -111,6 +116,20 @@ where
     T: for<'a> facet::Facet<'a>,
 {
     match kdl::from_str::<T>(content) {
+        Err(e) => {
+            // print_error(&e);
+            Err(crate::format_err!("{e}"))
+        }
+        Ok(r) => Ok(r),
+    }
+}
+
+#[cfg(test)]
+pub(crate) fn toml_parse<T>(content: &str) -> ConfigResult<T>
+where
+    T: for<'a> facet::Facet<'a>,
+{
+    match toml::from_str::<T>(content).map_err(crate::Error::from) {
         Err(e) => {
             print_error(&e);
             Err(crate::format_err!("{e}"))
@@ -264,10 +283,10 @@ mod tests {
         let aws_docs = mcp.get("awsdocs").unwrap();
         assert_eq!(aws_docs.command, "aws-docs");
         assert_eq!(aws_docs.args, vec!["--verbose\n--config=/path"]);
-        assert!(!aws_docs.disabled);
+        assert!(!aws_docs.disabled.clone().unwrap_or_default());
         assert_eq!(aws_docs.headers.len(), 1);
         assert_eq!(aws_docs.env.len(), 2);
-        assert_eq!(aws_docs.timeout, 5000);
+        assert_eq!(aws_docs.timeout, Some(5000));
         assert_eq!(agent.alias.len(), 1);
 
         Ok(())

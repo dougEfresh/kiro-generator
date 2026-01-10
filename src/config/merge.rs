@@ -14,7 +14,7 @@ impl KdlAgent {
         self.tools.extend(other.tools);
         self.allowed_tools.extend(other.allowed_tools);
         self.alias.extend(other.alias);
-        self.mcp.extend(other.mcp);
+        // self.mcpServer.extend(other.mcpServer);
         self.inherits.extend(other.inherits);
         self.tool_setting.extend(other.tool_setting);
 

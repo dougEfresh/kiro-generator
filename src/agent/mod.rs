@@ -13,10 +13,7 @@ use {
         fmt::Display,
     },
 };
-pub use {
-    custom_tool::{CustomToolConfig, tool_default_timeout},
-    tools::*,
-};
+pub use {custom_tool::CustomToolConfig, tools::*};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

@@ -1,5 +1,4 @@
 use {
-    super::GenericSet,
     crate::agent::{
         AwsTool as KiroAwsTool,
         ExecuteShellTool as KiroShellTool,
@@ -7,16 +6,19 @@ use {
         WriteTool as KiroWriteTool,
     },
     facet::Facet,
-    facet_kdl as kdl,
     std::collections::HashSet,
 };
 
 macro_rules! define_tool {
     ($name:ident) => {
-        #[derive(Clone, Debug, Default, PartialEq, Eq)]
+        #[derive(Facet, Clone, Debug, Default, PartialEq, Eq)]
+        #[facet(default, deny_unknown_fields, rename_all = "kebab-case")]
         pub struct $name {
+            #[facet(default, rename = "allow")]
             pub allows: HashSet<String>,
+            #[facet(default, rename = "deny")]
             pub denies: HashSet<String>,
+            #[facet(default)]
             pub overrides: HashSet<String>,
             pub disable_auto_readonly: Option<bool>,
             pub deny_by_default: Option<bool>,
@@ -57,84 +59,22 @@ macro_rules! define_tool {
     };
 }
 
-macro_rules! define_kdl_doc {
-    ($name:ident) => {
-        #[derive(Facet, Clone, Debug, Default, PartialEq, Eq)]
-        #[facet(default, rename_all = "kebab-case")]
-        pub struct $name {
-            #[facet(default, kdl::child)]
-            pub(super) allows: GenericSet,
-            #[facet(default, kdl::child)]
-            pub(super) denies: GenericSet,
-            #[facet(default, kdl::child)]
-            pub(super) overrides: GenericSet,
-            #[facet(default, kdl::property)]
-            pub deny_by_default: Option<bool>,
-            #[facet(default, kdl::property)]
-            pub disable_auto_readonly: Option<bool>,
-        }
-    };
-}
-
-macro_rules! define_tool_into {
-    ($name:ident, $to:ident) => {
-        impl From<$name> for $to {
-            fn from(value: $name) -> $to {
-                $to {
-                    allows: value.allows.item,
-                    denies: value.denies.item,
-                    overrides: value.overrides.item,
-                    deny_by_default: value.deny_by_default,
-                    disable_auto_readonly: value.disable_auto_readonly,
-                }
-            }
-        }
-    };
-}
-
-define_kdl_doc!(AwsToolDoc);
-define_kdl_doc!(ExecuteShellToolDoc);
-define_kdl_doc!(WriteToolDoc);
-define_kdl_doc!(ReadToolDoc);
 define_tool!(ExecuteShellTool);
 define_tool!(AwsTool);
 define_tool!(WriteTool);
 define_tool!(ReadTool);
-define_tool_into!(ExecuteShellToolDoc, ExecuteShellTool);
-define_tool_into!(AwsToolDoc, AwsTool);
-define_tool_into!(WriteToolDoc, WriteTool);
-define_tool_into!(ReadToolDoc, ReadTool);
 
 #[derive(Facet, Default, Clone, Debug, PartialEq, Eq)]
-#[facet(default)]
-pub struct NativeToolsDoc {
-    #[facet(default, kdl::child)]
-    pub shell: ExecuteShellToolDoc,
-    #[facet(default, kdl::child)]
-    pub aws: AwsToolDoc,
-    #[facet(default, kdl::child)]
-    pub read: ReadToolDoc,
-    #[facet(default, kdl::child)]
-    pub write: WriteToolDoc,
-}
-
-#[derive(Default, Clone, Debug, PartialEq, Eq)]
+#[facet(default, deny_unknown_fields, rename_all = "kebab-case")]
 pub struct NativeTools {
+    #[facet(default)]
     pub shell: ExecuteShellTool,
+    #[facet(default)]
     pub aws: AwsTool,
+    #[facet(default)]
     pub read: ReadTool,
+    #[facet(default)]
     pub write: WriteTool,
-}
-
-impl From<NativeToolsDoc> for NativeTools {
-    fn from(value: NativeToolsDoc) -> Self {
-        Self {
-            shell: value.shell.into(),
-            aws: value.aws.into(),
-            read: value.read.into(),
-            write: value.write.into(),
-        }
-    }
 }
 
 impl NativeTools {
@@ -241,7 +181,7 @@ mod tests {
         super::*,
         crate::{
             Result,
-            config::{ConfigResult, kdl_parse},
+            config::{ConfigResult, toml_parse},
         },
         std::fmt::Display,
     };
@@ -250,16 +190,16 @@ mod tests {
     }
     #[test_log::test]
     fn parse_shell_tool() -> ConfigResult<()> {
-        let kdl = r#"
-            shell deny-by-default=#true disable-auto-readonly=#false {
-                allows "ls .*" "git status"
-                denies "rm -rf /"
-                overrides "git push"
-            }
+        let raw = r#"
+[shell]
+deny-by-default=true
+disable-auto-readonly=false
+allow = ["ls .*",  "git status"]
+deny = ["rm -rf /"]
+overrides = ["git push"]
         "#;
 
-        let doc: NativeToolsDoc = kdl_parse(kdl)?;
-        let doc = NativeTools::from(doc);
+        let doc: NativeTools = toml_parse(raw)?;
         let shell = doc.shell;
         assert_eq!(shell.allows.len(), 2);
         assert_eq!(shell.denies.len(), 1);
@@ -271,15 +211,15 @@ mod tests {
 
     #[test_log::test]
     fn parse_aws_tool() -> ConfigResult<()> {
-        let kdl = r#"
-            aws disable-auto-readonly=#true {
-                allows "ec2" "s3"
-                denies "iam"
-            }
+        let raw = r#"
+            [aws]
+             disable-auto-readonly=true
+             allow =  ["ec2" , "s3"]
+             deny = ["iam"]
         "#;
 
-        let doc: NativeToolsDoc = kdl_parse(kdl)?;
-        let aws = NativeTools::from(doc).aws;
+        let doc: NativeTools = toml_parse(raw)?;
+        let aws = doc.aws;
         assert!(aws.disable_auto_readonly.is_some());
         assert!(aws.disable_auto_readonly.unwrap_or_default());
         assert_eq!(aws.allows.len(), 2);
@@ -289,23 +229,26 @@ mod tests {
 
     #[test_log::test]
     fn parse_read_write_tools() -> ConfigResult<()> {
-        let kdl = r#"
-            read {
-                allows "*.rs" "*.toml"
-                denies "/etc/*"
-                overrides "/etc/hosts"
-            }
-            write {
-                allows "*.txt"
-                denies "/tmp/*"
-                overrides "/tmp/allowed"
-            }
+        let raw = r#"
+            [read]
+            allow= ["*.rs", "*.toml"]
+            deny= ["/etc/*"]
+            overrides= ["/etc/hosts"]
+
+            [write]
+            allow= ["*.txt"]
+            deny= ["/tmp/*"]
+            overrides= ["/tmp/allowed"]
+
         "#;
 
-        let doc: NativeToolsDoc = kdl_parse(kdl)?;
-        let doc = NativeTools::from(doc);
+        let doc: NativeTools = toml_parse(raw)?;
         assert_eq!(doc.read.allows.len(), 2);
+        assert_eq!(doc.read.denies.len(), 1);
+        assert_eq!(doc.read.overrides.len(), 1);
         assert_eq!(doc.write.allows.len(), 1);
+        assert_eq!(doc.write.denies.len(), 1);
+        assert_eq!(doc.write.overrides.len(), 1);
         Ok(())
     }
 
@@ -316,6 +259,7 @@ mod tests {
         let merged = child.merge(parent);
 
         assert_eq!(merged, NativeTools::default());
+        toml_parse::<NativeTools>("")?;
         Ok(())
     }
 

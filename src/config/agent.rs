@@ -2,8 +2,7 @@ use {
     super::{
         GenericItem,
         hook::{HookDoc, HookPart},
-        mcp::CustomToolConfigDoc,
-        native::{AwsTool, ExecuteShellTool, NativeTools, NativeToolsDoc, ReadTool, WriteTool},
+        native::{AwsTool, ExecuteShellTool, NativeTools, ReadTool, WriteTool},
     },
     crate::{
         agent::CustomToolConfig,
@@ -117,13 +116,9 @@ pub struct KdlAgentDoc {
     pub(super) hook: Option<HookDoc>,
 
     #[facet(kdl::children, default)]
-    pub(super) mcp: Vec<CustomToolConfigDoc>,
-
-    #[facet(kdl::children, default)]
     pub(super) alias: Vec<GenericVec>,
 
-    #[facet(kdl::child, default)]
-    pub native_tool: NativeToolsDoc,
+    pub native_tool: NativeTools,
 
     #[facet(kdl::children, default)]
     pub(super) tool_setting: Vec<ToolSetting>,
@@ -155,7 +150,7 @@ impl From<KdlAgentDoc> for KdlAgent {
             hook: value.hooks(),
             resources: value.resources(),
             model: value.model.clone(),
-            mcp: value.mcp_servers(),
+            mcp: Default::default(),
             tools: value.tools(),
             tool_setting: Default::default(), // TODO use facet::Value
             native_tool: value.native_tool.into(),
@@ -222,15 +217,9 @@ impl KdlAgentDoc {
         split_newline(self.resources.clone())
     }
 
-    pub fn mcp_servers(&self) -> HashMap<String, CustomToolConfig> {
-        self.mcp
-            .iter()
-            .map(|m| (m.name.clone(), m.into()))
-            .collect()
-    }
-
     pub fn extra_tool_settings(&self) -> crate::Result<HashMap<String, serde_json::Value>> {
         Ok(HashMap::new())
+
         // for setting in &self.tool_setting {
         //     let (name, value) = setting.to_value()?;
         //     if result.contains_key(&name) {
