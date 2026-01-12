@@ -1,17 +1,14 @@
 use {
     super::*,
-    crate::config::{GeneratorConfig, GeneratorConfigDoc, KdlAgent, KdlAgentDoc},
+    crate::config::{ConfigResult, GeneratorConfig, KgAgent},
     std::{fmt::Display, ops::Deref, path::Path},
 };
 
-pub fn load_inline(fs: &Fs, path: impl AsRef<Path>) -> Result<GeneratorConfig> {
-    let doc: Option<Result<GeneratorConfigDoc>> = crate::config::kdl_parse_path(fs, path);
+pub fn load_inline(fs: &Fs, path: impl AsRef<Path>) -> ConfigResult<GeneratorConfig> {
+    let doc: Option<ConfigResult<GeneratorConfig>> = crate::config::toml_parse_path(fs, path);
     match doc {
         None => Ok(GeneratorConfig::default()),
-        Some(d) => {
-            let d = d?;
-            Ok(d.into())
-        }
+        Some(d) => Ok(d?),
     }
 }
 
@@ -19,15 +16,15 @@ fn process_local(
     fs: &Fs,
     name: impl AsRef<str>,
     location: &ConfigLocation,
-    inline: Option<&KdlAgent>,
+    inline: Option<&KgAgent>,
     sources: &mut Vec<KdlAgentSource>,
-) -> Result<KdlAgent> {
+) -> ConfigResult<KgAgent> {
     let local_agent_path = location.local(&name);
-    let result = KdlAgentDoc::from_path(fs, &name, &local_agent_path);
+    let result = KgAgent::from_path(fs, &name, &local_agent_path);
     match result {
-        None => Ok(KdlAgent::new(name.as_ref().to_string())),
+        None => Ok(KgAgent::new(name.as_ref().to_string())),
         Some(a) => {
-            let agent = KdlAgent::from(a?.clone());
+            let agent = a?;
             sources.push(KdlAgentSource::LocalFile(local_agent_path));
             if let Some(i) = inline {
                 sources.push(KdlAgentSource::LocalInline);
@@ -42,14 +39,14 @@ fn process_local(
 #[derive(Clone, Serialize)]
 pub struct ResolvedAgents {
     #[serde(skip)]
-    pub agents: HashMap<String, KdlAgent>,
+    pub agents: HashMap<String, KgAgent>,
     pub sources: KdlSources,
     #[serde(skip)]
     pub has_local: bool,
 }
 
 impl Deref for ResolvedAgents {
-    type Target = HashMap<String, KdlAgent>;
+    type Target = HashMap<String, KgAgent>;
 
     fn deref(&self) -> &Self::Target {
         &self.agents
@@ -82,8 +79,10 @@ pub fn discover(
     fs: &Fs,
     location: &ConfigLocation,
     format: &crate::output::OutputFormat,
-) -> Result<ResolvedAgents> {
-    location.is_valid(fs)?;
+) -> ConfigResult<ResolvedAgents> {
+    location
+        .is_valid(fs)
+        .map_err(|e| crate::Error::Report(e.to_string()))?;
 
     let global_path = location.global_kg();
     let local_path = location.local_kg();
@@ -100,7 +99,7 @@ pub fn discover(
     all_agents_names.extend(local_names.clone());
     all_agents_names.extend(global_names);
 
-    let mut resolved_agents: HashMap<String, KdlAgent> =
+    let mut resolved_agents: HashMap<String, KgAgent> =
         HashMap::with_capacity(all_agents_names.len());
     let mut sources: KdlSources = KdlSources::from(&all_agents_names);
 
@@ -123,20 +122,19 @@ pub fn discover(
                     agent_sources.push(KdlAgentSource::GlobalInline);
                     result = result.merge(a.clone());
                 }
-                let maybe_global_file = KdlAgentDoc::from_path(fs, name, location.global(name));
+                let maybe_global_file = KgAgent::from_path(fs, name, location.global(name));
                 if let Some(global) = maybe_global_file {
                     agent_sources.push(KdlAgentSource::GlobalFile(location.global(name)));
-                    result = result.merge(KdlAgent::from(global?.clone()));
+                    result = result.merge(global?);
                 }
                 resolved_agents.insert(name.to_string(), result);
             }
             ConfigLocation::Global(_) => {
-                let mut global_file = match KdlAgentDoc::from_path(fs, name, location.global(name))
-                {
-                    None => KdlAgent::new(name.to_string()),
+                let mut global_file = match KgAgent::from_path(fs, name, location.global(name)) {
+                    None => KgAgent::new(name.to_string()),
                     Some(a) => {
                         agent_sources.push(KdlAgentSource::GlobalFile(location.global(name)));
-                        KdlAgent::from(a?)
+                        a?
                     }
                 };
                 if let Some(inline) = global_agents.get(name) {

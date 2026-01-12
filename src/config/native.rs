@@ -12,7 +12,7 @@ use {
 macro_rules! define_tool {
     ($name:ident) => {
         #[derive(Facet, Clone, Debug, Default, PartialEq, Eq)]
-        #[facet(default, deny_unknown_fields, rename_all = "kebab-case")]
+        #[facet(default, deny_unknown_fields)]
         pub struct $name {
             #[facet(default, rename = "allow")]
             pub allows: HashSet<String>,
@@ -20,7 +20,9 @@ macro_rules! define_tool {
             pub denies: HashSet<String>,
             #[facet(default)]
             pub overrides: HashSet<String>,
+            #[facet(default, rename = "disableAutoReadOnly")]
             pub disable_auto_readonly: Option<bool>,
+            #[facet(default, rename = "denyByDefault")]
             pub deny_by_default: Option<bool>,
         }
 
@@ -192,8 +194,8 @@ mod tests {
     fn parse_shell_tool() -> ConfigResult<()> {
         let raw = r#"
 [shell]
-deny-by-default=true
-disable-auto-readonly=false
+denyByDefault=true
+disableAutoReadOnly=false
 allow = ["ls .*",  "git status"]
 deny = ["rm -rf /"]
 overrides = ["git push"]
@@ -213,9 +215,9 @@ overrides = ["git push"]
     fn parse_aws_tool() -> ConfigResult<()> {
         let raw = r#"
             [aws]
-             disable-auto-readonly=true
-             allow =  ["ec2" , "s3"]
-             deny = ["iam"]
+            disableAutoReadOnly=true
+            allow =  ["ec2" , "s3"]
+            deny = ["iam"]
         "#;
 
         let doc: NativeTools = toml_parse(raw)?;
@@ -253,7 +255,7 @@ overrides = ["git push"]
     }
 
     #[test_log::test]
-    pub fn test_native_merge_empty() -> Result<()> {
+    pub fn test_native_merge_empty() -> ConfigResult<()> {
         let child = NativeTools::default();
         let parent = NativeTools::default();
         let merged = child.merge(parent);

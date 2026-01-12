@@ -3,7 +3,6 @@ mod commands;
 mod config;
 mod error;
 mod generator;
-// mod kdl;
 mod os;
 pub mod output;
 mod schema;
@@ -12,14 +11,14 @@ mod source;
 use {
     crate::{generator::Generator, os::Fs},
     clap::Parser,
-    miette::{Context, IntoDiagnostic},
+    color_eyre::eyre::Context,
     std::path::Path,
     tracing::{debug, enabled},
     tracing_error::ErrorLayer,
     tracing_subscriber::prelude::*,
 };
-pub use {error::Error, miette::miette as format_err};
-pub type Result<T> = miette::Result<T>;
+pub use {color_eyre::eyre::format_err, error::Error};
+pub type Result<T> = color_eyre::Result<T>;
 
 pub(crate) const DOCS_URL: &str = "https://kg.cartera-mesh.com";
 
@@ -91,7 +90,6 @@ async fn init(fs: &Fs, gen_dir: impl AsRef<Path>) -> Result<()> {
     if !fs.exists(gen_dir) {
         fs.create_dir_all(gen_dir)
             .await
-            .into_diagnostic()
             .wrap_err_with(|| format!("failed to create directory {}", gen_dir.display()))?;
     }
 
@@ -106,7 +104,6 @@ async fn init(fs: &Fs, gen_dir: impl AsRef<Path>) -> Result<()> {
         let dest = gen_dir.join(filename);
         fs.write(&dest, content)
             .await
-            .into_diagnostic()
             .wrap_err_with(|| format!("failed to write {}", dest.display()))?;
         println!("Created {}", dest.display());
     }
@@ -154,7 +151,6 @@ async fn main() -> Result<()> {
             home_dir.as_os_str().display()
         );
         std::env::set_current_dir(&home_dir)
-            .into_diagnostic()
             .wrap_err(format!("failed to set CWD {}", home_dir.display()))?;
     }
     if local_mode {
@@ -180,7 +176,6 @@ async fn main() -> Result<()> {
         tracing::trace!(
             "Loaded Agent Generator Config:\n{}",
             serde_json::to_string_pretty(&q_generator_config)
-                .into_diagnostic()
                 .wrap_err("unable to decode to json")?
         );
     }

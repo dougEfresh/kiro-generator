@@ -5,23 +5,15 @@ use {
         generator::AgentResult,
         source::KdlSources,
     },
+    color_eyre::eyre::Context,
     colored::Colorize,
-    miette::{Context, GraphicalReportHandler, GraphicalTheme, IntoDiagnostic},
     std::fmt::Display,
     super_table::{modifiers::UTF8_ROUND_CORNERS, presets::UTF8_FULL, *},
     tracing::enabled,
 };
 
 pub fn print_error(e: &crate::Error) {
-    match e {
-        crate::Error::DeserializeError(file, kdl_err) => {
-            let mut output = String::new();
-            let handler = GraphicalReportHandler::new_themed(GraphicalTheme::unicode());
-            handler.render_report(&mut output, kdl_err).unwrap();
-            eprintln!("{}\nFile location: '{}'", output, file);
-        }
-        _ => {}
-    };
+    eprintln!("{e}");
 }
 
 /// Override the color setting. Default is [`ColorOverride::Auto`].
@@ -142,7 +134,7 @@ impl OutputFormat {
 
         // MCP servers (only enabled ones)
         let mut servers = Vec::new();
-        for (k, v) in &result.agent.mcp {
+        for (k, v) in &result.agent.mcp_servers {
             if !v.disabled.unwrap_or_default() {
                 servers.push(k.clone());
             }
@@ -160,7 +152,7 @@ impl OutputFormat {
             .collect();
         allowed_tools.sort();
         let mut enabled_tools = Vec::with_capacity(allowed_tools.len());
-        let mcps = &result.agent.mcp;
+        let mcps = &result.agent.mcp_servers;
         for t in allowed_tools {
             if t.len() < 2 {
                 continue;
@@ -306,9 +298,7 @@ impl OutputFormat {
                 let kiro_agents: Vec<Agent> = results.into_iter().map(|a| a.kiro_agent).collect();
                 println!(
                     "{}",
-                    serde_json::to_string_pretty(&kiro_agents)
-                        .into_diagnostic()
-                        .wrap_err("todo")?
+                    facet_json::to_string_pretty(&kiro_agents).wrap_err("TODO")?
                 );
                 Ok(())
             }

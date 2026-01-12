@@ -6,7 +6,6 @@ use {
 
 #[derive(Facet, Default, Clone, Serialize, Deserialize, Debug, Eq, PartialEq)]
 #[facet(default, deny_unknown_fields)]
-#[serde(rename_all = "camelCase")]
 pub struct CustomToolConfig {
     /// The URL for HTTP-based MCP server communication
     #[facet(default, skip_serializing_if = String::is_empty)]
@@ -29,6 +28,28 @@ pub struct CustomToolConfig {
     /// A boolean flag to denote whether or not to load this mcp server
     #[facet(default)]
     pub disabled: Option<bool>,
+}
+
+impl CustomToolConfig {
+    pub fn merge(mut self, other: Self) -> Self {
+        // Child wins for explicit values
+        self.timeout = self.timeout.or(other.timeout);
+        self.disabled = self.disabled.or(other.disabled);
+
+        if self.url.is_empty() {
+            self.url = other.url;
+        }
+        if self.command.is_empty() {
+            self.command = other.command;
+        }
+
+        // Extend parent with child (child wins on conflicts)
+        self.headers = other.headers.into_iter().chain(self.headers).collect();
+        self.env = other.env.into_iter().chain(self.env).collect();
+        self.args.extend(other.args);
+
+        self
+    }
 }
 
 #[cfg(test)]
@@ -129,5 +150,71 @@ timeout  =1000
         assert_eq!(mcp.args, vec!["--verbose", "--output=json"]);
         assert!(mcp.disabled.unwrap_or_default());
         Ok(())
+    }
+
+    #[test]
+    fn test_merge_child_wins() {
+        let parent = CustomToolConfig {
+            command: "parent-cmd".into(),
+            timeout: Some(1000),
+            env: [("KEY".into(), "parent".into())].into(),
+            headers: [("Auth".into(), "parent-token".into())].into(),
+            ..Default::default()
+        };
+
+        let child = CustomToolConfig {
+            timeout: Some(2000),
+            env: [("KEY".into(), "child".into())].into(),
+            headers: [("Auth".into(), "child-token".into())].into(),
+            ..Default::default()
+        };
+
+        let merged = child.merge(parent);
+        assert_eq!(merged.command, "parent-cmd");
+        assert_eq!(merged.timeout, Some(2000));
+        assert_eq!(merged.env.get("KEY"), Some(&"child".into()));
+        assert_eq!(merged.headers.get("Auth"), Some(&"child-token".into()));
+    }
+
+    #[test]
+    fn test_merge_extends_collections() {
+        let parent = CustomToolConfig {
+            env: [("PARENT_KEY".into(), "parent".into())].into(),
+            headers: [("X-Parent".into(), "value".into())].into(),
+            args: vec!["--parent".into()],
+            ..Default::default()
+        };
+
+        let child = CustomToolConfig {
+            env: [("CHILD_KEY".into(), "child".into())].into(),
+            headers: [("X-Child".into(), "value".into())].into(),
+            args: vec!["--child".into()],
+            ..Default::default()
+        };
+
+        let merged = child.merge(parent);
+        assert_eq!(merged.env.len(), 2);
+        assert_eq!(merged.headers.len(), 2);
+        assert_eq!(merged.args.len(), 2);
+        assert!(merged.args.contains(&"--parent".into()));
+        assert!(merged.args.contains(&"--child".into()));
+    }
+
+    #[test]
+    fn test_merge_empty_strings() {
+        let parent = CustomToolConfig {
+            command: "parent-cmd".into(),
+            url: "http://parent".into(),
+            ..Default::default()
+        };
+
+        let child = CustomToolConfig {
+            command: "child-cmd".into(),
+            ..Default::default()
+        };
+
+        let merged = child.merge(parent);
+        assert_eq!(merged.command, "child-cmd");
+        assert_eq!(merged.url, "http://parent");
     }
 }
