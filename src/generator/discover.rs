@@ -8,7 +8,10 @@ pub fn load_inline(fs: &Fs, path: impl AsRef<Path>) -> ConfigResult<GeneratorCon
     let doc: Option<ConfigResult<GeneratorConfig>> = crate::config::toml_parse_path(fs, path);
     match doc {
         None => Ok(GeneratorConfig::default()),
-        Some(d) => Ok(d?),
+        Some(d) => {
+            let agents = d?;
+            Ok(agents.populate_names())
+        }
     }
 }
 
@@ -177,10 +180,11 @@ mod tests {
         let agents = resolved.agents;
         let sources = resolved.sources;
         assert!(!agents.is_empty());
-        assert_eq!(sources.keys().len(), 3);
+        assert_eq!(sources.keys().len(), 4);
         assert!(sources.contains_key("base"));
         assert!(sources.contains_key("aws-test"));
         assert!(sources.contains_key("dependabot"));
+        assert!(sources.contains_key("empty"));
 
         let source = sources.get("base").unwrap();
         assert_eq!(source.len(), 2);

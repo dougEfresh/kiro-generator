@@ -34,7 +34,10 @@ where
     match fs.read_to_string_sync(&path) {
         Ok(content) => match toml::from_str(&content) {
             Ok(r) => Some(Ok(r)),
-            Err(e) => Some(Err(e.into())),
+            Err(e) => Some(Err(Error::FileDeserializeError(format!(
+                "{} {e}",
+                path.as_ref().display(),
+            )))),
         },
         Err(e) => Some(Err(e.into())),
     }
@@ -56,10 +59,17 @@ where
 
 #[derive(Default, Facet)]
 pub struct GeneratorConfig {
-    #[facet(default, rename = "agent")]
+    #[facet(default, rename = "agents")]
     pub agents: HashMap<String, KgAgent>,
 }
-
+impl GeneratorConfig {
+    pub fn populate_names(mut self) -> Self {
+        for (k, v) in self.agents.iter_mut() {
+            v.name = k.clone();
+        }
+        self
+    }
+}
 impl Debug for GeneratorConfig {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         writeln!(f, "agents={}", self.agents.len())

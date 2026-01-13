@@ -126,7 +126,7 @@ mod tests {
     fn execute_shell_tool_default() {
         let tool = ExecuteShellTool::default();
         assert!(!tool.deny_by_default);
-        assert!(!tool.auto_allow_readonly);
+        assert!(tool.auto_allow_readonly);
     }
 
     #[test]

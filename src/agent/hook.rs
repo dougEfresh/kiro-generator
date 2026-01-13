@@ -53,15 +53,22 @@ impl Hook {
 mod tests {
     use super::*;
     #[test]
-    fn hook_facet() -> crate::config::ConfigResult<()> {
-        let hook = Hook {
+    fn hook_merge() -> crate::config::ConfigResult<()> {
+        let parent = Hook {
             command: "test".into(),
             hook_type: HookTrigger::AgentSpawn.to_string(),
             matcher: Some("*.rs".into()),
         };
-        let json = facet_json::to_string(&hook)?;
-        let deserialized: Hook = facet_json::from_str(&json).unwrap();
-        assert_eq!(hook, deserialized);
+
+        let child = Hook {
+            command: "test-child".into(),
+            hook_type: HookTrigger::AgentSpawn.to_string(),
+            matcher: None,
+        };
+
+        let merged = child.merge(parent);
+        assert_eq!("test-child", merged.command);
+        assert_eq!(Some("*.rs".to_string()), merged.matcher);
         Ok(())
     }
 }

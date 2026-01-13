@@ -21,6 +21,7 @@ pub struct KgAgentFileDoc {
     pub resources: HashSet<String>,
     #[facet(default, rename = "includeMcpJson")]
     pub include_mcp_json: Option<bool>,
+    #[facet(default)]
     pub tools: HashSet<String>,
     #[facet(default, rename = "allowedTools")]
     pub allowed_tools: HashSet<String>,

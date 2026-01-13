@@ -8,6 +8,8 @@ pub enum Error {
     JsonSerializeError(#[from] facet_format::SerializeError<facet_json::JsonSerializeError>),
     #[error(transparent)]
     FileIoError(#[from] std::io::Error),
+    #[error("Invalid syntax in file {0}")]
+    FileDeserializeError(String),
     #[error("error report {0}")]
     Report(String),
 }
