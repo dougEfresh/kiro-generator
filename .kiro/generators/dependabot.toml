@@ -1,7 +1,7 @@
 description = "I make life painful for developers"
 
-[nativeTool]
-shell = { allow = ["git commit .*", "git push .*"] }
-read = { allow = [".*Cargo.toml.*"] }
-write = { allow = [".*Cargo.toml.*"] }
+[nativeTools]
+shell = { overrides = ["git commit .*", "git push .*"] }
+read = { overrides = [".*Cargo.toml.*"] }
+write = { overrides = [".*Cargo.toml.*"] }
 aws = { disableAutoReadOnly = false }

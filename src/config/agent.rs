@@ -33,10 +33,10 @@ pub struct KgAgent {
     pub mcp_servers: HashMap<String, CustomToolConfig>,
     #[facet(default, rename = "toolAliases")]
     pub alias: HashMap<String, String>,
-    #[facet(default, rename = "nativeTool")]
+    #[facet(default, rename = "nativeTools")]
     pub native_tools: NativeTools,
     #[facet(default, rename = "toolSettings")]
-    pub tool_setting: HashMap<String, facet_value::Value>,
+    pub tool_settings: HashMap<String, facet_value::Value>,
 }
 
 impl Debug for KgAgent {

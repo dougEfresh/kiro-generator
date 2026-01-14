@@ -85,7 +85,7 @@ mod tests {
         )?;
 
         let merged = generator.merge()?;
-        assert_eq!(merged.len(), 3);
+        assert_eq!(merged.len(), 4);
 
         // Find dependabot agent
         let dependabot = merged
@@ -113,7 +113,7 @@ mod tests {
         let allowed = &dependabot.allowed_tools;
         assert!(allowed.contains("read"));
         assert!(allowed.contains("knowledge"));
-        assert!(allowed.contains("fetch"));
+        assert!(allowed.contains("@fetch"));
         assert!(allowed.contains("@awsdocs"));
 
         // Should have resources from all three

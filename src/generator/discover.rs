@@ -240,7 +240,7 @@ mod tests {
         let fs = Fs::new();
         let e = load_inline(
             &fs,
-            PathBuf::from(".kiro").join("generators").join("bad.kdl"),
+            PathBuf::from(".kiro").join("generators").join("bad.toml"),
         );
         assert!(e.is_err());
     }
@@ -258,11 +258,13 @@ mod tests {
             &crate::output::OutputFormat::Table(true),
         )?;
 
-        assert_eq!(resolved.len(), 3);
+        assert_eq!(resolved.len(), 4);
 
         for (n, agent_sources) in resolved.sources.iter() {
             if n == "aws-test" {
                 assert_eq!(agent_sources.len(), 4);
+            } else if n == "empty" {
+                assert_eq!(agent_sources.len(), 2);
             } else {
                 assert_eq!(agent_sources.len(), 3);
             }

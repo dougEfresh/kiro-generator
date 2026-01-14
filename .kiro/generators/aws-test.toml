@@ -12,7 +12,7 @@ includeMcpJson = false
 type = "agentSpawn"
 command = "aws sts get-caller-identity"
 
-[nativeTool.aws]
+[nativeTools.aws]
 allow = ["ec2", "s3"]
 deny = ["iam"]
 disableAutoReadOnly = false

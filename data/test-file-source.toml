@@ -41,12 +41,12 @@ Authorization = "Bearer token"
 [toolAliases]
 execute_bash = "shell"
 
-[nativeTool.write]
+[nativeTools.write]
 allow = ["./src/*", "./scripts/**"]
 deny = ["Cargo.lock"]
 overrides = ["/tmp", "/var/log"]
 
-[nativeTool.shell]
+[nativeTools.shell]
 denyByDefault = true
 allow = ["git status .*"]
 deny = ["git push .*"]

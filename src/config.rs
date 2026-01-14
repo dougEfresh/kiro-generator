@@ -58,6 +58,7 @@ where
 }
 
 #[derive(Default, Facet)]
+#[facet(deny_unknown_fields)]
 pub struct GeneratorConfig {
     #[facet(default, rename = "agents")]
     pub agents: HashMap<String, KgAgent>,
@@ -142,10 +143,10 @@ mod tests {
         assert_eq!(aws_docs.timeout, Some(5000));
         assert_eq!(agent.alias.len(), 1);
 
-        assert_eq!(1, agent.tool_setting.len());
-        assert!(agent.tool_setting.contains_key("whoami"));
+        assert_eq!(1, agent.tool_settings.len());
+        assert!(agent.tool_settings.contains_key("whoami"));
         let raw = r#"{"env":{"LOG_LEVEL":"debug"}}"#;
-        let result = facet_value::format_value(agent.tool_setting.get("whoami").unwrap());
+        let result = facet_value::format_value(agent.tool_settings.get("whoami").unwrap());
         assert_eq!(raw, result.replace("\n", "").replace(" ", ""));
 
         Ok(())
@@ -154,7 +155,7 @@ mod tests {
     #[test_log::test]
     fn test_agent_empty() -> ConfigResult<()> {
         let kdl_agents = r#"
-            [agent.test]
+            [agents.test]
             template=true
         "#;
 

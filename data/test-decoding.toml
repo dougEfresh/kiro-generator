@@ -1,4 +1,4 @@
-[agent.test]
+[agents.test]
 includeMcpJson = true
 inherits = ["parent"]
 description = "This is a test agent"
@@ -7,52 +7,52 @@ resources = ["file://resource.md", "file://README.md"]
 tools = ["*"]
 allowedTools = ["@awsdocs"]
 
-[agent.test.hooks.spawn]
+[agents.test.hooks.spawn]
 type = "agentSpawn"
 command = "echo i have spawned"
 
-[agent.test.hooks.submit]
+[agents.test.hooks.submit]
 type = "userPromptSubmit"
 command = "echo user submitted"
 
-[agent.test.hooks.post]
+[agents.test.hooks.post]
 type = "postToolUse"
 command = "echo after tool"
 
-[agent.test.hooks.stop]
+[agents.test.hooks.stop]
 type = "stop"
 command = "echo stopped"
 
-[agent.test.hooks.pre]
+[agents.test.hooks.pre]
 type = "preToolUse"
 command = "echo before tool"
 matcher = "git.*"
 
-[agent.test.mcpServers.awsdocs]
+[agents.test.mcpServers.awsdocs]
 command = "aws-docs"
 args = ["--verbose", "--config=/path"]
 timeout = 5000
 
-[agent.test.mcpServers.awsdocs.env]
+[agents.test.mcpServers.awsdocs.env]
 RUST_LOG = "debug"
 PATH = "/usr/bin"
 
-[agent.test.mcpServers.awsdocs.headers]
+[agents.test.mcpServers.awsdocs.headers]
 Authorization = "Bearer token"
 
-[agent.test.toolAliases]
+[agents.test.toolAliases]
 execute_bash = "shell"
 
-[agent.test.nativeTool.write]
+[agents.test.nativeTools.write]
 allow = ["./src/*", "./scripts/**"]
 deny = ["Cargo.lock"]
 overrides = ["/tmp", "/var/log"]
 
-[agent.test.nativeTool.shell]
+[agents.test.nativeTools.shell]
 denyByDefault = true
 allow = ["git status .*"]
 deny = ["git push .*"]
 overrides = ["git pull .*"]
 
-[agent.test.toolSettings.whoami]
+[agents.test.toolSettings.whoami]
 env = { LOG_LEVEL = "debug" }

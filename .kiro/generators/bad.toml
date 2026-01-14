@@ -1,2 +1,2 @@
-[agent.bad]
+[agents.bad]
 includeMcpJson = "not a bool"

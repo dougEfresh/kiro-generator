@@ -1,7 +1,7 @@
-[agent.base]
+[agents.base]
 template = true
 
-[agent.aws-test]
+[agents.aws-test]
 inherits = ["base"]
 
-[agent.dependabot]
+[agents.dependabot]

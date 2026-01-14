@@ -8,12 +8,12 @@ includeMcpJson = false
 type = "agentSpawn"
 command = "echo My name is Bob"
 
-[nativeTool]
+[nativeTools]
 read = { deny = [".*Cargo.toml.*", ".*yarn.lock.*"] }
 write = { deny = [".*Cargo.toml.*"] }
 aws = { disableAutoReadOnly = true }
 
-[nativeTool.shell]
+[nativeTools.shell]
 allow = [
   "git status",
   "git fetch",

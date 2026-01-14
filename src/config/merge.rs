@@ -15,7 +15,7 @@ impl KgAgent {
         self.allowed_tools.extend(other.allowed_tools);
         self.alias.extend(other.alias);
         self.inherits.extend(other.inherits);
-        self.tool_setting.extend(other.tool_setting);
+        self.tool_settings.extend(other.tool_settings);
 
         // Merge hooks - child overrides parent for same key
         for (key, parent_hook) in other.hooks {

@@ -32,10 +32,10 @@ pub struct KgAgentFileDoc {
     pub mcp_servers: HashMap<String, CustomToolConfig>,
     #[facet(default, rename = "toolAliases")]
     pub alias: HashMap<String, String>,
-    #[facet(default, rename = "nativeTool")]
+    #[facet(default, rename = "nativeTools")]
     pub native_tools: NativeTools,
     #[facet(default, rename = "toolSettings")]
-    pub tool_setting: HashMap<String, facet_value::Value>,
+    pub tool_settings: HashMap<String, facet_value::Value>,
 }
 
 impl KgAgent {
@@ -68,7 +68,7 @@ impl KgAgent {
             model: file_source.model,
             alias: file_source.alias,
             native_tools: file_source.native_tools,
-            tool_setting: file_source.tool_setting,
+            tool_settings: file_source.tool_settings,
             mcp_servers: file_source.mcp_servers,
         }
     }

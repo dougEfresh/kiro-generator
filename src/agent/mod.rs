@@ -92,57 +92,35 @@ impl TryFrom<&KgAgent> for Agent {
         let tool: AwsTool = native_tools.into();
         let tool_name = ToolTarget::Aws.to_string();
         if tool != AwsTool::default() {
-            let v: facet_value::Value = facet_value::value!(facet_json::to_string(&tool)?);
-            tools_settings.insert(
-                tool_name.to_string(),
-                facet_value::from_value(v).map_err(|e| {
-                    crate::format_err!("Failed to serialize {tool_name} tool configuration {e}")
-                })?,
-            );
+            let v: facet_value::Value = facet_json::from_str(&facet_json::to_string(&tool)?)?;
+            tools_settings.insert(tool_name.to_string(), v);
         }
         let tool: ReadTool = native_tools.into();
         let tool_name = ToolTarget::Read.to_string();
         if tool != ReadTool::default() {
-            let v: facet_value::Value = facet_value::value!(facet_json::to_string(&tool)?);
-            tools_settings.insert(
-                tool_name.to_string(),
-                facet_value::from_value(v).map_err(|e| {
-                    crate::format_err!("Failed to serialize {tool_name} tool configuration {e}")
-                })?,
-            );
+            let v: facet_value::Value = facet_json::from_str(&facet_json::to_string(&tool)?)?;
+            tools_settings.insert(tool_name.to_string(), v);
         }
         let tool: WriteTool = native_tools.into();
         let tool_name = ToolTarget::Write.to_string();
         if tool != WriteTool::default() {
-            let v: facet_value::Value = facet_value::value!(facet_json::to_string(&tool)?);
-            tools_settings.insert(
-                tool_name.to_string(),
-                facet_value::from_value(v).map_err(|e| {
-                    crate::format_err!("Failed to serialize {tool_name} tool configuration {e}")
-                })?,
-            );
+            let v: facet_value::Value = facet_json::from_str(&facet_json::to_string(&tool)?)?;
+            tools_settings.insert(tool_name.to_string(), v);
         }
         let tool: ExecuteShellTool = native_tools.into();
         let tool_name = ToolTarget::Shell.to_string();
         if tool != ExecuteShellTool::default() {
-            let v: facet_value::Value = facet_value::value!(facet_json::to_string(&tool)?);
-            tools_settings.insert(
-                tool_name.to_string(),
-                facet_value::from_value(v).map_err(|e| {
-                    crate::format_err!("Failed to serialize {tool_name} tool configuration {e}")
-                })?,
-            );
+            let v: facet_value::Value = facet_json::from_str(&facet_json::to_string(&tool)?)?;
+            tools_settings.insert(tool_name.to_string(), v);
         }
         let default_agent = Self::default();
         let tools = value.tools.clone();
         let allowed_tools = value.allowed_tools.clone();
         let resources: HashSet<String> = value.resources.clone();
 
-        // Extra tool settings override native tools
-        // let extra_tool_settings = value.extra_tool_settings()?;
-        // tools_settings.extend(extra_tool_settings);
+        let extra_tool_settings = value.tool_settings.clone();
+        tools_settings.extend(extra_tool_settings);
 
-        let hooks: HashMap<String, Vec<Hook>> = HashMap::new();
         Ok(Self {
             name: value.name.clone(),
             description: value.description.clone(),
@@ -164,7 +142,7 @@ impl TryFrom<&KgAgent> for Agent {
             } else {
                 resources
             },
-            hooks,
+            hooks: value.hooks(),
             tools_settings,
             model: value.model.clone(),
             include_mcp_json: value.include_mcp_json.is_some_and(|f| f),
