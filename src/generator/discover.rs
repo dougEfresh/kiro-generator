@@ -39,12 +39,14 @@ fn process_local(
     }
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Facet)]
+#[facet(opaque)]
 pub struct ResolvedAgents {
-    #[serde(skip)]
+    #[facet(default)]
     pub agents: HashMap<String, KgAgent>,
+    #[facet(skip, default)]
     pub sources: KdlSources,
-    #[serde(skip)]
+    #[facet(skip, default)]
     pub has_local: bool,
 }
 

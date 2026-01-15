@@ -6,7 +6,7 @@ use {
         os::Fs,
     },
     color_eyre::eyre::Context,
-    serde::Serialize,
+    facet::Facet,
     std::{
         collections::{HashMap, HashSet},
         fmt::{self, Debug},
@@ -68,13 +68,14 @@ impl AgentResult {
 }
 
 /// Main generator that orchestrates agent discovery and merging
-#[derive(Serialize)]
+#[derive(Facet)]
+#[facet(opaque)]
 pub struct Generator {
     global_path: PathBuf,
     resolved: discover::ResolvedAgents,
-    #[serde(skip)]
+    #[facet(skip, default)]
     fs: Fs,
-    #[serde(skip)]
+    #[facet(skip, default)]
     #[allow(unused)]
     format: crate::output::OutputFormat,
 }

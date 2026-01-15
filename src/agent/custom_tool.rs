@@ -1,10 +1,6 @@
-use {
-    facet::Facet,
-    serde::{Deserialize, Serialize},
-    std::collections::HashMap,
-};
+use {facet::Facet, std::collections::HashMap};
 
-#[derive(Facet, Default, Clone, Serialize, Deserialize, Debug, Eq, PartialEq)]
+#[derive(Facet, Default, Clone, Debug, Eq, PartialEq)]
 #[facet(default, deny_unknown_fields)]
 pub struct CustomToolConfig {
     /// The URL for HTTP-based MCP server communication
@@ -57,7 +53,6 @@ mod tests {
     use {
         super::*,
         crate::config::{ConfigResult, toml_parse},
-        indoc::indoc,
     };
 
     #[derive(Facet, Debug)]
@@ -68,13 +63,11 @@ mod tests {
 
     #[test]
     fn parse_basic_mcp() -> ConfigResult<()> {
-        let raw = indoc! {
-            r#"
+        let raw = r#"
 [mcpServers.rustdocs]
 command = "rust-docs-mcp"
 timeout  =1000
-"#
-        };
+"#;
 
         let doc: McpDoc = toml_parse(raw)?;
         assert!(!doc.mcp_servers.is_empty());
@@ -135,13 +128,12 @@ timeout  =1000
 
     #[test]
     fn parse_mcp_with_args() -> ConfigResult<()> {
-        let raw = indoc! { r#"
+        let raw = r#"
         [mcpServers.tool]
         command = "my-tool"
         args = ["--verbose", "--output=json"]
         disabled = true
-        "#
-        };
+        "#;
 
         let doc: McpDoc = toml_parse(raw)?;
         assert!(!doc.mcp_servers.is_empty());

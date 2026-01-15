@@ -141,7 +141,7 @@ async fn main() -> Result<()> {
     if enabled!(tracing::Level::TRACE) {
         tracing::trace!(
             "Loaded Agent Generator Config:\n{}",
-            serde_json::to_string_pretty(&q_generator_config)
+            facet_json::to_string_pretty(&q_generator_config)
                 .wrap_err("unable to decode to json")?
         );
     }
