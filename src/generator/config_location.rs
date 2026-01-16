@@ -6,7 +6,7 @@ pub enum ConfigLocation {
     Global(PathBuf),
     /// Only local ./.kiro/generators
     Local,
-    /// Both global and local configs (local overrides global)
+    /// Both global and local configs (local force_allow global)
     Both(PathBuf),
 }
 

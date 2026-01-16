@@ -17,7 +17,7 @@ impl KgAgent {
         self.inherits.extend(other.inherits);
         self.tool_settings.extend(other.tool_settings);
 
-        // Merge hooks - child overrides parent for same key
+        // Merge hooks - child force_allow parent for same key
         for (key, parent_hook) in other.hooks {
             self.hooks
                 .entry(key)
@@ -27,7 +27,7 @@ impl KgAgent {
                 .or_insert(parent_hook);
         }
 
-        // Merge mcp_servers - child overrides parent for same key
+        // Merge mcp_servers - child force_allow parent for same key
         for (key, parent_mcp) in other.mcp_servers {
             self.mcp_servers
                 .entry(key)
@@ -112,19 +112,19 @@ mod tests {
         assert!(alias.contains_key("execute_bash"));
 
         let tool = merged.get_tool_write();
-        assert!(tool.overrides.contains("Cargo.lock"));
+        assert!(tool.force_allow.contains("Cargo.lock"));
         assert_eq!(tool.allows.len(), 2);
-        assert_eq!(tool.overrides.len(), 1);
+        assert_eq!(tool.force_allow.len(), 1);
         assert_eq!(tool.denies.len(), 1);
 
         let tool = merged.get_tool_read();
         assert_eq!(tool.allows.len(), 2);
-        assert_eq!(tool.overrides.len(), 0);
+        assert_eq!(tool.force_allow.len(), 0);
         assert_eq!(tool.denies.len(), 1);
 
         let tool = merged.get_tool_shell();
         assert_eq!(tool.allows.len(), 2);
-        assert_eq!(tool.overrides.len(), 1);
+        assert_eq!(tool.force_allow.len(), 1);
         assert_eq!(tool.denies.len(), 1);
 
         let tool = merged.get_tool_aws();

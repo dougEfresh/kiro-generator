@@ -32,13 +32,13 @@ impl AgentResult {
         self.agent.is_template()
     }
 
-    pub fn overrides(&self, target: &ToolTarget) -> Vec<String> {
+    pub fn force_allow(&self, target: &ToolTarget) -> Vec<String> {
         match target {
             ToolTarget::Read => self
                 .agent
                 .native_tools
                 .read
-                .overrides
+                .force_allow
                 .iter()
                 .map(|f| f.to_string())
                 .collect(),
@@ -46,7 +46,7 @@ impl AgentResult {
                 .agent
                 .native_tools
                 .write
-                .overrides
+                .force_allow
                 .iter()
                 .map(|f| f.to_string())
                 .collect(),
@@ -54,7 +54,7 @@ impl AgentResult {
                 .agent
                 .native_tools
                 .shell
-                .overrides
+                .force_allow
                 .iter()
                 .map(|f| f.to_string())
                 .collect(),

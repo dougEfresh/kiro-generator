@@ -18,8 +18,8 @@ macro_rules! define_tool {
             pub allows: HashSet<String>,
             #[facet(default, rename = "deny")]
             pub denies: HashSet<String>,
-            #[facet(default, rename = "allowOverride")]
-            pub overrides: HashSet<String>,
+            #[facet(default, rename = "forceAllow")]
+            pub force_allow: HashSet<String>,
             #[facet(default, rename = "disableAutoReadOnly")]
             pub disable_auto_readonly: Option<bool>,
             #[facet(default, rename = "denyByDefault")]
@@ -44,13 +44,13 @@ macro_rules! define_tool {
                     );
                     self.denies.extend(other.denies);
                 }
-                if !other.overrides.is_empty() {
+                if !other.force_allow.is_empty() {
                     tracing::trace!(
                         tool = stringify!($name),
-                        count = other.overrides.len(),
-                        "merging overrides"
+                        count = other.force_allow.len(),
+                        "merging force_allow"
                     );
-                    self.overrides.extend(other.overrides);
+                    self.force_allow.extend(other.force_allow);
                 }
                 self.disable_auto_readonly =
                     self.disable_auto_readonly.or(other.disable_auto_readonly);
@@ -105,12 +105,12 @@ impl From<&NativeTools> for KiroWriteTool {
         let write = &value.write;
         let mut allows: HashSet<String> = write.allows.clone();
         let mut denies: HashSet<String> = write.denies.clone();
-        if !write.overrides.is_empty() {
+        if !write.force_allow.is_empty() {
             tracing::trace!(
                 "Override/Forcing write: {:?}",
-                write.overrides.iter().collect::<Vec<_>>()
+                write.force_allow.iter().collect::<Vec<_>>()
             );
-            for cmd in write.overrides.iter() {
+            for cmd in write.force_allow.iter() {
                 allows.insert(cmd.clone());
                 if denies.remove(cmd) {
                     tracing::trace!("Removed from denies: {cmd}");
@@ -130,12 +130,12 @@ impl From<&NativeTools> for KiroReadTool {
         let read = &value.read;
         let mut allows: HashSet<String> = read.allows.clone();
         let mut denies: HashSet<String> = read.denies.clone();
-        if !read.overrides.is_empty() {
+        if !read.force_allow.is_empty() {
             tracing::trace!(
                 "Override/Forcing read: {:?}",
-                read.overrides.iter().collect::<Vec<_>>()
+                read.force_allow.iter().collect::<Vec<_>>()
             );
-            for cmd in read.overrides.iter() {
+            for cmd in read.force_allow.iter() {
                 allows.insert(cmd.clone());
                 if denies.remove(cmd) {
                     tracing::trace!("Removed from denies: {cmd}");
@@ -156,12 +156,12 @@ impl From<&NativeTools> for KiroShellTool {
         let mut allows: HashSet<String> = shell.allows.clone();
         let mut denies: HashSet<String> = shell.denies.clone();
 
-        if !shell.overrides.is_empty() {
+        if !shell.force_allow.is_empty() {
             tracing::trace!(
                 "Override/Forcing commands: {:?}",
-                shell.overrides.iter().collect::<Vec<_>>()
+                shell.force_allow.iter().collect::<Vec<_>>()
             );
-            for cmd in shell.overrides.iter() {
+            for cmd in shell.force_allow.iter() {
                 allows.insert(cmd.clone());
                 if denies.remove(cmd) {
                     tracing::trace!("Removed command from denies: {cmd}");
@@ -198,7 +198,7 @@ denyByDefault=true
 disableAutoReadOnly=false
 allow = ["ls .*",  "git status"]
 deny = ["rm -rf /"]
-allowOverride = ["git push"]
+forceAllow = ["git push"]
         "#;
 
         let doc: NativeTools = toml_parse(raw)?;
@@ -207,7 +207,7 @@ allowOverride = ["git push"]
         assert_eq!(shell.denies.len(), 1);
         assert!(shell.deny_by_default.unwrap_or_default());
         assert!(!shell.disable_auto_readonly.unwrap_or_default());
-        assert_eq!(shell.overrides.len(), 1);
+        assert_eq!(shell.force_allow.len(), 1);
         Ok(())
     }
 
@@ -235,22 +235,22 @@ allowOverride = ["git push"]
             [read]
             allow= ["*.rs", "*.toml"]
             deny= ["/etc/*"]
-            allowOverride = ["/etc/hosts"]
+            forceAllow = ["/etc/hosts"]
 
             [write]
             allow= ["*.txt"]
             deny= ["/tmp/*"]
-            allowOverride = ["/tmp/allowed"]
+            forceAllow = ["/tmp/allowed"]
 
         "#;
 
         let doc: NativeTools = toml_parse(raw)?;
         assert_eq!(doc.read.allows.len(), 2);
         assert_eq!(doc.read.denies.len(), 1);
-        assert_eq!(doc.read.overrides.len(), 1);
+        assert_eq!(doc.read.force_allow.len(), 1);
         assert_eq!(doc.write.allows.len(), 1);
         assert_eq!(doc.write.denies.len(), 1);
-        assert_eq!(doc.write.overrides.len(), 1);
+        assert_eq!(doc.write.force_allow.len(), 1);
         Ok(())
     }
 
@@ -272,27 +272,27 @@ allowOverride = ["git push"]
             aws: AwsTool {
                 disable_auto_readonly: None,
                 deny_by_default: None,
-                overrides: Default::default(),
+                force_allow: Default::default(),
                 allows: into_set(vec!["ec2"]),
                 denies: into_set(vec!["iam"]),
             },
             shell: ExecuteShellTool {
                 allows: into_set(vec!["ls .*"]),
                 denies: into_set(vec!["git push"]),
-                overrides: into_set(vec!["rm -rf /"]),
+                force_allow: into_set(vec!["rm -rf /"]),
                 deny_by_default: Some(true),
                 disable_auto_readonly: Some(false),
             },
             read: ReadTool {
                 allows: into_set(vec!["ls .*"]),
                 denies: into_set(vec!["git push"]),
-                overrides: into_set(vec!["rm -rf /"]),
+                force_allow: into_set(vec!["rm -rf /"]),
                 ..Default::default()
             },
             write: WriteTool {
                 allows: into_set(vec!["ls .*"]),
                 denies: into_set(vec!["git push"]),
-                overrides: into_set(vec!["rm -rf /"]),
+                force_allow: into_set(vec!["rm -rf /"]),
                 ..Default::default()
             },
         };
@@ -412,7 +412,7 @@ allowOverride = ["git push"]
                 denies: into_set(vec!["rm"]),
                 deny_by_default: None,
                 disable_auto_readonly: None,
-                overrides: into_set(vec!["rm"]),
+                force_allow: into_set(vec!["rm"]),
             },
             ..Default::default()
         };
@@ -438,7 +438,7 @@ allowOverride = ["git push"]
             read: ReadTool {
                 allows: into_set(vec!["ls"]),
                 denies: into_set(vec!["rm"]),
-                overrides: into_set(vec!["rm"]),
+                force_allow: into_set(vec!["rm"]),
                 ..Default::default()
             },
             ..Default::default()
@@ -462,7 +462,7 @@ allowOverride = ["git push"]
         let write = WriteTool {
             allows: into_set(vec!["ls"]),
             denies: into_set(vec!["rm"]),
-            overrides: into_set(vec!["rm"]),
+            force_allow: into_set(vec!["rm"]),
             ..Default::default()
         };
         let a = NativeTools {

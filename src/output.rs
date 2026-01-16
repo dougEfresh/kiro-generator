@@ -170,9 +170,9 @@ impl OutputFormat {
         row.add_cell(Cell::new(enabled_tools.join(", ")));
 
         // Override permissions (security-critical)
-        let sh = result.overrides(&ToolTarget::Shell);
-        let read = result.overrides(&ToolTarget::Read);
-        let write = result.overrides(&ToolTarget::Write);
+        let sh = result.force_allow(&ToolTarget::Shell);
+        let read = result.force_allow(&ToolTarget::Read);
+        let write = result.force_allow(&ToolTarget::Write);
 
         let mut forced = vec![];
         if let Some(c) = serialize_yaml("cmds:\n", &sh) {
