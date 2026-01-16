@@ -16,9 +16,9 @@
 ```shell
 $ kg init
 
-Created /home/user/.kiro/generators/kg.kdl
-Created /home/user/.kiro/generators/default.kdl
-Created /home/user/.kiro/generators/example.kdl
+Created /home/user/.kiro/generators/kg.toml
+Created /home/user/.kiro/generators/default.toml
+Created /home/user/.kiro/generators/example.toml
 
 ✓ Initialized kg configuration in /home/user/.kiro/generators
 

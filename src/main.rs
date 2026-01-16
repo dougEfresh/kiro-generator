@@ -67,7 +67,7 @@ fn init_tracing(debug: bool, trace_agent: Option<&str>) {
 /// Initialize a new kg configuration directory.
 ///
 /// Creates the specified directory (if needed) and populates it with
-/// default configuration files: kg.kdl, default.kdl, and example.kdl.
+/// default configuration files: kg.toml, default.toml, and example.toml.
 ///
 /// # Arguments
 /// * `fs` - Filesystem abstraction for testability
@@ -75,7 +75,7 @@ fn init_tracing(debug: bool, trace_agent: Option<&str>) {
 ///
 /// # Errors
 /// Returns an error if:
-/// - kg.kdl already exists in the target directory
+/// - kg.toml already exists in the target directory
 /// - Directory creation fails
 /// - File write operations fail
 #[allow(unused_variables)]

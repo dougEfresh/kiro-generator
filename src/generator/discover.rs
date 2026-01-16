@@ -74,10 +74,10 @@ impl Display for ResolvedAgents {
 ///
 /// merge agent config from lowest precedence to higher precedence:
 /// ```text
-/// * `~/.kiro/generators/<agent-name>.kdl`
-/// * `~/.kiro/generators/kg.kdl`
-/// * `.kiro/generators/<agent-name>.kdl`
-/// * `.kiro/generators/kg.kdl`
+/// * `~/.kiro/generators/<agent-name>.toml`
+/// * `~/.kiro/generators/kg.toml`
+/// * `.kiro/generators/<agent-name>.toml`
+/// * `.kiro/generators/kg.toml`
 /// ```
 #[tracing::instrument(level = "info")]
 pub fn discover(
@@ -172,7 +172,7 @@ mod tests {
 
     #[tokio::test]
     #[test_log::test]
-    async fn test_discover_local_agents_kdl() -> Result<()> {
+    async fn test_discover_local_agents_toml() -> Result<()> {
         let fs = Fs::new();
         let resolved = discover(
             &fs,
@@ -211,7 +211,7 @@ mod tests {
 
     #[tokio::test]
     #[test_log::test]
-    async fn test_discover_global_agents_kdl() -> Result<()> {
+    async fn test_discover_global_agents_toml() -> Result<()> {
         let fs = Fs::new();
         let g_path = PathBuf::from(ACTIVE_USER_HOME)
             .join(".kiro")
@@ -249,7 +249,7 @@ mod tests {
 
     #[tokio::test]
     #[test_log::test]
-    async fn test_discover_both_agents_kdl() -> Result<()> {
+    async fn test_discover_both_agents_toml() -> Result<()> {
         let fs = Fs::new();
         let g_path = PathBuf::from(ACTIVE_USER_HOME)
             .join(".kiro")
