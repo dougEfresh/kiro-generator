@@ -39,11 +39,14 @@ impl CustomToolConfig {
             self.command = other.command;
         }
 
-        // Extend parent with child (child wins on conflicts)
-        self.headers = other.headers.into_iter().chain(self.headers).collect();
-        self.env = other.env.into_iter().chain(self.env).collect();
         self.args.extend(other.args);
 
+        let mut merged = other.env; // Start with parent
+        merged.extend(self.env); // Child overwrites parent
+        self.env = merged;
+        let mut merged = other.headers; // Start with parent
+        merged.extend(self.headers); // Child overwrites parent
+        self.headers = merged;
         self
     }
 }

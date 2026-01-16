@@ -18,7 +18,7 @@ macro_rules! define_tool {
             pub allows: HashSet<String>,
             #[facet(default, rename = "deny")]
             pub denies: HashSet<String>,
-            #[facet(default)]
+            #[facet(default, rename = "allowOverride")]
             pub overrides: HashSet<String>,
             #[facet(default, rename = "disableAutoReadOnly")]
             pub disable_auto_readonly: Option<bool>,
@@ -132,7 +132,7 @@ impl From<&NativeTools> for KiroReadTool {
         let mut denies: HashSet<String> = read.denies.clone();
         if !read.overrides.is_empty() {
             tracing::trace!(
-                "Override/Forcing write: {:?}",
+                "Override/Forcing read: {:?}",
                 read.overrides.iter().collect::<Vec<_>>()
             );
             for cmd in read.overrides.iter() {
@@ -198,7 +198,7 @@ denyByDefault=true
 disableAutoReadOnly=false
 allow = ["ls .*",  "git status"]
 deny = ["rm -rf /"]
-overrides = ["git push"]
+allowOverride = ["git push"]
         "#;
 
         let doc: NativeTools = toml_parse(raw)?;
@@ -235,12 +235,12 @@ overrides = ["git push"]
             [read]
             allow= ["*.rs", "*.toml"]
             deny= ["/etc/*"]
-            overrides= ["/etc/hosts"]
+            allowOverride = ["/etc/hosts"]
 
             [write]
             allow= ["*.txt"]
             deny= ["/tmp/*"]
-            overrides= ["/tmp/allowed"]
+            allowOverride = ["/tmp/allowed"]
 
         "#;
 

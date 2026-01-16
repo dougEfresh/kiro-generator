@@ -56,10 +56,10 @@ tools = ["@awsdocs", "shell"]
 execute_bash = "shell"
 
 [agents.child.nativeTools.write]
-overrides = ["Cargo.lock"]
+allowOverride = ["Cargo.lock"]
 
 [agents.child.nativeTools.shell]
-overrides = ["git push .*"]
+allowOverride = ["git push .*"]
 
 [agents.child.hooks.spawn]
 type = "agentSpawn"

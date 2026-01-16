@@ -46,13 +46,13 @@ execute_bash = "shell"
 [agents.test.nativeTools.write]
 allow = ["./src/*", "./scripts/**"]
 deny = ["Cargo.lock"]
-overrides = ["/tmp", "/var/log"]
+allowOverride = ["/tmp", "/var/log"]
 
 [agents.test.nativeTools.shell]
 denyByDefault = true
 allow = ["git status .*"]
 deny = ["git push .*"]
-overrides = ["git pull .*"]
+allowOverride = ["git pull .*"]
 
 [agents.test.toolSettings.whoami]
 env = { LOG_LEVEL = "debug" }
