@@ -24,7 +24,7 @@ jobs:
       - name: Validate ANTROPIC_API_KEY
         shell: bash
         run: |
-          [ -z "${{ secrets.ANTROPIC_API_KEY }}" ] && exit 1
+          [ -z "${{ secrets.ANTHROPIC_API_KEY }}" ] && exit 1
       - name: jobtaker
         uses: anthropics/claude-code-action@v1
         with:
