@@ -45,11 +45,11 @@ pub struct InitArgs {
 
 #[derive(clap::Args, Clone, Default)]
 pub struct Args {
+    /// Use only local configuration (ignore global ~/.kiro/generators/)
     #[arg(long, conflicts_with = "global")]
-    /// Ignore global $HOME kg.toml and all global agent definitions
     pub local: bool,
+    /// Use only global configuration (ignore local .kiro/generators/)
     #[arg(short = 'g', long, conflicts_with = "local")]
-    /// Ignore local .kiro/generators/kg.toml config agent definitions
     pub global: bool,
     /// Show template agents in output
     #[arg(long, default_value = "false")]

@@ -116,6 +116,21 @@ allowedTools = ["read", "knowledge"]
 
 Both approaches can be mixed. External definitions take precedence over inline definitions.
 
+### When to Use Inline vs External
+
+**Use inline configuration** when:
+- Agent config is short (< 10 lines)
+- You want everything in one file for simplicity
+- Prototyping or experimenting
+
+**Use external files** when:
+- Config is complex or large
+- Multiple people edit the same agent
+- You want to reuse configurations across projects
+- Following team conventions
+
+**Best practice**: Start with inline for simplicity, extract to external files as configs grow.
+
 ## Validation
 
 Use `kg validate` to see the final merged configuration:
