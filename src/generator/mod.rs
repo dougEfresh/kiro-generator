@@ -13,6 +13,9 @@ use {
         path::PathBuf,
     },
 };
+
+pub(super) const MAX_AGENT_DIR_DEPTH: usize = 5;
+
 mod config_location;
 mod discover;
 mod merge;
@@ -99,7 +102,7 @@ impl Generator {
         location: ConfigLocation,
         format: crate::output::OutputFormat,
     ) -> Result<Self> {
-        let global_path = location.global_kg();
+        let global_path = location.global_path();
         let resolved = discover::discover(&fs, &location, &format).unwrap();
         Ok(Self {
             global_path,
