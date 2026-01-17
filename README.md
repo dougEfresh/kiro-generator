@@ -9,53 +9,33 @@
 
 `kiro-generator` (aka `kg`) is a tool for managing and generating [Kiro](https://kiro.dev/docs/) custom agent [files](https://kiro.dev/docs/cli/custom-agents/).
 
+Stop writing JSON. Define your Kiro agents in TOML with inheritance, templates, and reusable components.
+
+## Why?
+
+- **Composable**: Build agents from reusable templates
+- **Type-safe**: TOML validation with JSON schema support
+- **Shareable**: Package and distribute complete agent configurations
+- **Hierarchical**: Global and project-specific agents
+- **DRY**: Inherit and extend configurations
+
 ## Quick Start 
 
-1. Initialize your config
-
 ```shell
-$ kg init
+# Initialize configuration
+kg init
 
-Created /home/user/.kiro/generators/kg.toml
-Created /home/user/.kiro/generators/default.toml
-Created /home/user/.kiro/generators/example.toml
+# Edit your agent manifest
+vim ~/.kiro/generators/manifests/kg.toml
 
-✓ Initialized kg configuration in /home/user/.kiro/generators
+# Validate configuration
+kg validate
 
+# Generate agent JSON files
+kg generate
 ```
 
-2. Review/Modify/Add to your config
-
-See [documentation](https://kg.cartera-mesh.com) for further info and examples
-
-3. Validate your config
-
-```shell
-$ kg validate 
-╭────────────────────┬─────┬─────────────────┬────────────────────────────────────────────────┬────────────────────┬────────┬────────┬────────╮
-│ Agent 🤖 (PREVIEW) ┆ Loc ┆ MCP 💻          ┆ Allowed Tools ⚙️                               ┆ Resources 📋       ┆    Overrides             │
-╞════════════════════╪═════╪═════════════════╪════════════════════════════════════════════════╪════════════════════╪══════════════════════════╡
-│ default            ┆ 📁  ┆                 ┆ knowledge, read, web_search                    ┆ - file://README.md ┆                          │
-│                    ┆     ┆                 ┆                                                ┆ - file://AGENTS.md ┆                          │
-│                    ┆     ┆                 ┆                                                ┆                    ┆                          │
-├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│ rust               ┆ 📁  ┆ cargo, rustdocs ┆ @cargo, @rustdocs, knowledge, read, web_search ┆ - file://README.md ┆                          │
-│                    ┆     ┆                 ┆                                                ┆ - file://AGENTS.md ┆                          │
-│                    ┆     ┆                 ┆                                                ┆ - file://RUST.md   ┆                          │
-│                    ┆     ┆                 ┆                                                ┆                    ┆                          │
-╰────────────────────┴─────┴─────────────────┴────────────────────────────────────────────────┴────────────────────┴──────────────────────────╯
-
-🎉 Config is valid
-→ Run kg generate to generate agent files
-```
-
-4. Generate 
-
-```shell
-$ kg generate
-```
-
-profit
+See [documentation](https://kg.cartera-mesh.com) for detailed guides and examples.
 
 ---
 
