@@ -165,7 +165,7 @@ pub fn discover(
     format: &crate::output::OutputFormat,
 ) -> ConfigResult<ResolvedAgents> {
     // Validate no duplicate agent names
-    location.validate(fs)?;
+    location.validate(fs, MAX_AGENT_DIR_ENTRIES)?;
 
     let global_manifests_dir = location.global_manifests_dir();
     let local_manifests_dir = location.local_manifests_dir();

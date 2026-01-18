@@ -63,7 +63,8 @@ impl ConfigLocation {
 
     /// Validate that there are no duplicate agent names in the agent
     /// directories
-    pub fn validate(&self, fs: &Fs) -> ConfigResult<()> {
+    #[allow(clippy::too_many_arguments)]
+    pub fn validate(&self, fs: &Fs, max_entities: usize) -> ConfigResult<()> {
         fn scan_for_duplicates(
             fs: &Fs,
             dir: &Path,
@@ -71,6 +72,8 @@ impl ConfigLocation {
             max_depth: usize,
             seen: &mut HashMap<String, PathBuf>,
             scope: &str,
+            total_entities: &mut usize,
+            max_entities: usize,
         ) -> ConfigResult<()> {
             if current_depth > max_depth || !fs.exists(dir) {
                 return Ok(());
@@ -79,15 +82,28 @@ impl ConfigLocation {
             let entries = fs.read_dir_sync(dir).map_err(|e| {
                 crate::Error::Report(format!("Failed to read directory {}: {}", dir.display(), e))
             })?;
-
             for entry in entries.flatten() {
+                *total_entities += 1;
+                if *total_entities > max_entities {
+                    let path = entry.path();
+                    return Err(crate::Error::MaxEntities(path.display().to_string()));
+                }
                 let path = entry.path();
                 let metadata = entry
                     .metadata()
                     .map_err(|e| crate::Error::Report(format!("Failed to read metadata: {}", e)))?;
 
                 if metadata.is_dir() {
-                    scan_for_duplicates(fs, &path, current_depth + 1, max_depth, seen, scope)?;
+                    scan_for_duplicates(
+                        fs,
+                        &path,
+                        current_depth + 1,
+                        max_depth,
+                        seen,
+                        scope,
+                        total_entities,
+                        max_entities,
+                    )?;
                 } else if path.extension().and_then(|s| s.to_str()) == Some("toml")
                     && let Some(stem) = path.file_stem().and_then(|s| s.to_str())
                 {
@@ -108,33 +124,39 @@ impl ConfigLocation {
         }
 
         // Validate global agents if applicable
+        let mut total_entities = 0;
+
         if !matches!(self, ConfigLocation::Local) {
             let global_agents_dir = match self {
                 ConfigLocation::Global(path) | ConfigLocation::Both(path) => path.join("agents"),
                 ConfigLocation::Local => unreachable!(),
             };
-            let mut seen = HashMap::new();
+            let mut global_seen = HashMap::new();
             scan_for_duplicates(
                 fs,
                 &global_agents_dir,
                 0,
                 super::MAX_AGENT_DIR_DEPTH,
-                &mut seen,
+                &mut global_seen,
                 "global agents",
+                &mut total_entities,
+                max_entities,
             )?;
         }
 
-        // Validate local agents if applicable
+        // Validate local agents if applicable (separate scope, can override global)
         if !matches!(self, ConfigLocation::Global(_)) {
             let local_agents_dir = PathBuf::from(".kiro/generators/agents");
-            let mut seen = HashMap::new();
+            let mut local_seen = HashMap::new();
             scan_for_duplicates(
                 fs,
                 &local_agents_dir,
                 0,
                 super::MAX_AGENT_DIR_DEPTH,
-                &mut seen,
+                &mut local_seen,
                 "local agents",
+                &mut total_entities,
+                max_entities,
             )?;
         }
 
@@ -221,5 +243,75 @@ impl Display for ConfigLocation {
                 write!(f, "global={},local", p.display())
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use {super::*, crate::os::ACTIVE_USER_HOME};
+
+    #[tokio::test]
+    async fn test_validate_local_no_duplicates() -> ConfigResult<()> {
+        let fs = Fs::new();
+        let location = ConfigLocation::Local;
+        location.validate(&fs, 1000)?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_validate_global_no_duplicates() -> ConfigResult<()> {
+        let fs = Fs::new();
+        let g_path = PathBuf::from(ACTIVE_USER_HOME)
+            .join(".kiro")
+            .join("generators");
+        let location = ConfigLocation::Global(g_path);
+        location.validate(&fs, 1000)?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_validate_both_no_duplicates() -> ConfigResult<()> {
+        let fs = Fs::new();
+        let g_path = PathBuf::from(ACTIVE_USER_HOME)
+            .join(".kiro")
+            .join("generators");
+        let location = ConfigLocation::Both(g_path);
+        location.validate(&fs, 1000)?;
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_validate_max_entities_exceeded() {
+        let fs = Fs::new();
+        let location = ConfigLocation::Local;
+        let result = location.validate(&fs, 1);
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), crate::Error::MaxEntities(_)));
+    }
+
+    #[tokio::test]
+    async fn test_validate_with_duplicate_agents() -> ConfigResult<()> {
+        let fs = Fs::new();
+        let agents_dir = PathBuf::from(".kiro/generators/agents");
+        fs.create_dir_all(&agents_dir).await?;
+
+        // Create duplicate agent files
+        let dup1 = agents_dir.join("duplicate.toml");
+        let subdir = agents_dir.join("subdir");
+        fs.create_dir_all(&subdir).await?;
+        let dup2 = subdir.join("duplicate.toml");
+
+        fs.write(&dup1, b"description = \"First\"").await?;
+        fs.write(&dup2, b"description = \"Second\"").await?;
+
+        let location = ConfigLocation::Local;
+        let result = location.validate(&fs, 1000);
+
+        assert!(result.is_err());
+        assert!(matches!(
+            result.unwrap_err(),
+            crate::Error::DuplicateAgent { .. }
+        ));
+        Ok(())
     }
 }

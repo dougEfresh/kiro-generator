@@ -19,4 +19,7 @@ pub enum Error {
     },
     #[error("error report {0}")]
     Report(String),
+
+    #[error("Directory {0} has too many files or directories")]
+    MaxEntities(String),
 }

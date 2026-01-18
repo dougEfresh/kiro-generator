@@ -15,6 +15,8 @@ use {
 };
 
 pub(super) const MAX_AGENT_DIR_DEPTH: usize = 5;
+/// max number of files or directories in a given Path
+pub(super) const MAX_AGENT_DIR_ENTRIES: usize = 100;
 
 mod config_location;
 mod discover;
