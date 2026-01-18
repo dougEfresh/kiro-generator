@@ -15,8 +15,9 @@ use {
 };
 
 pub(super) const MAX_AGENT_DIR_DEPTH: usize = 5;
-/// max number of files or directories in a given Path
-pub(super) const MAX_AGENT_DIR_ENTRIES: usize = 100;
+/// max number of files or directories in a given Path.
+/// 1000 should be more than enough to handle templates and real agents
+pub(super) const MAX_AGENT_DIR_ENTRIES: usize = 1000;
 
 mod config_location;
 mod discover;
