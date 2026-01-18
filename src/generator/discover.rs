@@ -84,7 +84,7 @@ fn process_local(
     inline: Option<&KgAgent>,
     sources: &mut Vec<KdlAgentSource>,
 ) -> ConfigResult<KgAgent> {
-    let local_agent_path = location.local_agent(fs, &name);
+    let local_agent_path = location.local_agent(fs, &name)?;
 
     match &local_agent_path {
         None => {
@@ -207,7 +207,7 @@ pub fn discover(
                     agent_sources.push(KdlAgentSource::GlobalInline);
                     result = result.merge(a.clone());
                 }
-                if let Some(global_path) = location.global_agent(fs, name)
+                if let Some(global_path) = location.global_agent(fs, name)?
                     && let Some(global) = KgAgent::from_path(fs, name, &global_path)
                 {
                     agent_sources.push(KdlAgentSource::GlobalFile(global_path));
@@ -217,7 +217,7 @@ pub fn discover(
             }
             ConfigLocation::Global(_) => {
                 let mut global_file = KgAgent::new(name.to_string());
-                if let Some(global_path) = location.global_agent(fs, name)
+                if let Some(global_path) = location.global_agent(fs, name)?
                     && let Some(agent) = KgAgent::from_path(fs, name, &global_path)
                 {
                     agent_sources.push(KdlAgentSource::GlobalFile(global_path));

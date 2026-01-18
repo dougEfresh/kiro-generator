@@ -11,33 +11,43 @@ fn find_agent_file(
     agent_name: &str,
     current_depth: usize,
     max_depth: usize,
-) -> Option<PathBuf> {
+) -> ConfigResult<Option<PathBuf>> {
     if current_depth > max_depth || !fs.exists(dir) {
-        return None;
+        return Ok(None);
     }
 
-    let entries = fs.read_dir_sync(dir).ok()?;
+    let entries = fs.read_dir_sync(dir).map_err(|e| {
+        crate::Error::Report(format!("Failed to read directory {}: {}", dir.display(), e))
+    })?;
 
-    for entry in entries.flatten() {
+    for entry in entries {
+        let entry = entry
+            .map_err(|e| crate::Error::Report(format!("Failed to read directory entry: {}", e)))?;
         let path = entry.path();
-        let metadata = entry.metadata().ok()?;
+        let metadata = entry.metadata().map_err(|e| {
+            crate::Error::Report(format!(
+                "Failed to read metadata for {}: {}",
+                path.display(),
+                e
+            ))
+        })?;
 
         if metadata.is_dir() {
             // Recurse into subdirectory
             if let Some(found) =
-                find_agent_file(fs, &path, agent_name, current_depth + 1, max_depth)
+                find_agent_file(fs, &path, agent_name, current_depth + 1, max_depth)?
             {
-                return Some(found);
+                return Ok(Some(found));
             }
         } else if path.extension().and_then(|s| s.to_str()) == Some("toml")
             && let Some(stem) = path.file_stem().and_then(|s| s.to_str())
             && stem == agent_name
         {
-            return Some(path);
+            return Ok(Some(path));
         }
     }
 
-    None
+    Ok(None)
 }
 
 /// Represents where configuration files are located
@@ -82,7 +92,10 @@ impl ConfigLocation {
             let entries = fs.read_dir_sync(dir).map_err(|e| {
                 crate::Error::Report(format!("Failed to read directory {}: {}", dir.display(), e))
             })?;
-            for entry in entries.flatten() {
+            for entry in entries {
+                let entry = entry.map_err(|e| {
+                    crate::Error::Report(format!("Failed to read directory entry: {}", e))
+                })?;
                 *total_entities += 1;
                 if *total_entities > max_entities {
                     let path = entry.path();
@@ -165,10 +178,10 @@ impl ConfigLocation {
 
     /// Get path to agent definition file in agents/ directory (searches
     /// recursively)
-    pub fn global_agent(&self, fs: &Fs, name: impl AsRef<str>) -> Option<PathBuf> {
+    pub fn global_agent(&self, fs: &Fs, name: impl AsRef<str>) -> ConfigResult<Option<PathBuf>> {
         let agents_dir = match self {
             ConfigLocation::Global(path) | ConfigLocation::Both(path) => path.join("agents"),
-            ConfigLocation::Local => return None,
+            ConfigLocation::Local => return Ok(None),
         };
 
         find_agent_file(
@@ -182,10 +195,10 @@ impl ConfigLocation {
 
     /// Get path to agent definition file in agents/ directory (searches
     /// recursively)
-    pub fn local_agent(&self, fs: &Fs, name: impl AsRef<str>) -> Option<PathBuf> {
+    pub fn local_agent(&self, fs: &Fs, name: impl AsRef<str>) -> ConfigResult<Option<PathBuf>> {
         let agents_dir = match self {
             Self::Local | Self::Both(_) => PathBuf::from(".kiro/generators/agents"),
-            Self::Global(_) => return None,
+            Self::Global(_) => return Ok(None),
         };
 
         find_agent_file(
@@ -312,6 +325,60 @@ mod tests {
             result.unwrap_err(),
             crate::Error::DuplicateAgent { .. }
         ));
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_find_agent_file_in_subdirectory() -> ConfigResult<()> {
+        let fs = Fs::new();
+        let agents_dir = PathBuf::from(".kiro/generators/agents");
+        fs.create_dir_all(&agents_dir).await?;
+
+        // Create agent in subdirectory
+        let subdir = agents_dir.join("aws-mcps");
+        fs.create_dir_all(&subdir).await?;
+        let agent_file = subdir.join("eks.toml");
+        fs.write(&agent_file, b"description = \"EKS agent\"")
+            .await?;
+
+        let result = find_agent_file(&fs, &agents_dir, "eks", 0, 5)?;
+        assert!(result.is_some());
+        let found = result.unwrap();
+        assert!(found.ends_with("aws-mcps/eks.toml"));
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_find_agent_file_respects_max_depth() -> ConfigResult<()> {
+        let fs = Fs::new();
+        let agents_dir = PathBuf::from(".kiro/generators/agents");
+        fs.create_dir_all(&agents_dir).await?;
+
+        // Create deeply nested agent (depth 3)
+        let deep_dir = agents_dir.join("a").join("b").join("c");
+        fs.create_dir_all(&deep_dir).await?;
+        let agent_file = deep_dir.join("deep.toml");
+        fs.write(&agent_file, b"description = \"Deep agent\"")
+            .await?;
+
+        // Should find with max_depth=5
+        let result = find_agent_file(&fs, &agents_dir, "deep", 0, 5)?;
+        assert!(result.is_some());
+
+        // Should NOT find with max_depth=2
+        let result = find_agent_file(&fs, &agents_dir, "deep", 0, 2)?;
+        assert!(result.is_none());
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_find_agent_file_returns_none_when_not_found() -> ConfigResult<()> {
+        let fs = Fs::new();
+        let agents_dir = PathBuf::from(".kiro/generators/agents");
+        fs.create_dir_all(&agents_dir).await?;
+
+        let result = find_agent_file(&fs, &agents_dir, "nonexistent", 0, 5)?;
+        assert!(result.is_none());
         Ok(())
     }
 }
