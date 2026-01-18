@@ -100,7 +100,7 @@ mod tests {
         assert!(agent.is_some());
         let agent = agent.unwrap().clone();
         assert!(agent.model.is_none());
-        assert!(!agent.is_template());
+        assert!(!agent.template);
         let inherits = &agent.inherits;
         assert_eq!(inherits.len(), 1);
         assert_eq!(inherits.iter().next().unwrap(), "parent");
@@ -164,7 +164,7 @@ mod tests {
         assert_eq!(config.agents.len(), 1);
         let agent = config.agents.get("test").unwrap();
         assert!(agent.model.is_none());
-        assert!(agent.is_template());
+        assert!(agent.template);
 
         Ok(())
     }

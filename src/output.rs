@@ -115,7 +115,7 @@ impl OutputFormat {
         let mut row = Row::new();
 
         // Agent name with template indicator
-        let name_cell = if result.is_template() {
+        let name_cell = if result.agent.template {
             Cell::new(format!("{} {}", result.agent.name, "💀"))
         } else {
             Cell::new(&result.agent.name)
@@ -123,7 +123,7 @@ impl OutputFormat {
         row.add_cell(name_cell);
 
         // Location: 🏠 for global, 📁 for local
-        let location = if result.is_template() {
+        let location = if result.agent.template {
             Cell::new("")
         } else if result.destination.is_absolute() {
             Cell::new("🏠")
@@ -276,7 +276,7 @@ impl OutputFormat {
                 }
 
                 for result in &results {
-                    if show_templates || !result.is_template() {
+                    if show_templates || !result.agent.template {
                         table.add_row(self.agent_result_to_row(result));
                     }
                 }

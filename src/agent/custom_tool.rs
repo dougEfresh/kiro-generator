@@ -22,7 +22,7 @@ pub struct CustomToolConfig {
     #[facet(default, skip_serializing_if = Option::is_none)]
     pub timeout: Option<u64>,
     /// A boolean flag to denote whether or not to load this mcp server
-    #[facet(default)]
+    #[facet(default, skip_serializing_if = Option::is_none)]
     pub disabled: Option<bool>,
 }
 
