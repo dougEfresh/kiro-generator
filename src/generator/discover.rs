@@ -96,6 +96,7 @@ fn process_local(
             }
         }
         Some(path) => {
+            // Template status is only defined in manifests, passed via inline config
             match KgAgent::from_path(fs, &name, path, inline.is_some_and(|i| i.template)) {
                 None => {
                     if let Some(i) = inline {

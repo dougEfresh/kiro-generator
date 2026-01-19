@@ -13,6 +13,10 @@ use {
 pub struct KgAgent {
     #[facet(default)]
     pub name: String,
+    /// Whether this agent is a template. Templates are not written to disk
+    /// and serve only as parent configurations for other agents to inherit
+    /// from. Template status is NEVER inherited - it must be explicitly
+    /// declared.
     #[facet(default)]
     pub template: bool,
     pub description: Option<String>,

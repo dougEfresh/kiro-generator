@@ -137,7 +137,7 @@ mod tests {
         let aws_docs = mcp.get("awsdocs").unwrap();
         assert_eq!(aws_docs.command, "aws-docs");
         assert_eq!(aws_docs.args, vec!["--verbose", "--config=/path"]);
-        assert!(!aws_docs.disabled.unwrap_or_default());
+        assert!(!aws_docs.disabled);
         assert_eq!(aws_docs.headers.len(), 1);
         assert_eq!(aws_docs.env.len(), 2);
         assert_eq!(aws_docs.timeout, Some(5000));
