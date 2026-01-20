@@ -12,10 +12,6 @@ use {
     tracing::enabled,
 };
 
-pub fn print_error(e: &crate::Error) {
-    eprintln!("{e}");
-}
-
 /// Override the color setting. Default is [`ColorOverride::Auto`].
 #[derive(Copy, Clone, Debug, Default, clap::ValueEnum)]
 pub enum ColorOverride {
@@ -83,6 +79,17 @@ fn serialize_yaml(label: &str, values: &[String]) -> Option<Cell> {
 
 impl OutputFormat {
     pub fn sources(&self, sources: &KdlSources) -> Result<()> {
+        // Always trace per agent
+        for (name, agent_sources) in sources.iter() {
+            let span = tracing::trace_span!("agent", name = name.as_str());
+            let _enter = span.enter();
+            tracing::trace!(
+                sources = ?agent_sources.iter().map(ToString::to_string).collect::<Vec<_>>(),
+                "agent sources"
+            );
+        }
+
+        // Only show table in debug mode
         if !enabled!(tracing::Level::DEBUG) {
             return Ok(());
         }
@@ -101,7 +108,7 @@ impl OutputFormat {
                     ]);
                 for (name, agent_sources) in sources.iter() {
                     let mut row: Vec<Cell> = vec![Cell::new(name.to_string())];
-                    row.extend(agent_sources.iter().map(|s| s.into()));
+                    row.extend(agent_sources.iter().map(|s| s.to_cell()));
                     table.add_row(row);
                 }
                 eprintln!("{table}");
