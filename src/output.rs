@@ -303,7 +303,8 @@ impl OutputFormat {
                 let kiro_agents: Vec<Agent> = results.into_iter().map(|a| a.kiro_agent).collect();
                 println!(
                     "{}",
-                    facet_json::to_string_pretty(&kiro_agents).wrap_err("TODO")?
+                    facet_json::to_string_pretty(&kiro_agents)
+                        .wrap_err("Failed to serialize agents to JSON")?
                 );
                 Ok(())
             }
