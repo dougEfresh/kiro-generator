@@ -1,0 +1,7 @@
+"$schema" = "https://raw.githubusercontent.com/CarteraMesh/kiro-generator/refs/heads/main/schemas/kg.json"
+
+# Kiro Generator Manifest
+# Declare your agents and their relationships here
+
+[agents]
+default = { inherits = [] }

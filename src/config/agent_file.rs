@@ -15,6 +15,8 @@ use {
 #[derive(Facet, Clone, Default)]
 #[facet(deny_unknown_fields, default)]
 pub struct KgAgentFileDoc {
+    #[facet(default, rename = "$schema")]
+    pub schema: Option<String>,
     pub description: Option<String>,
     pub prompt: Option<String>,
     #[facet(default)]
@@ -72,6 +74,7 @@ impl Manifest {
         template: bool,
     ) -> Self {
         Self {
+            schema: None,
             name: name.as_ref().to_string(),
             description: file_source.description,
             template,
