@@ -149,7 +149,7 @@ impl Generator {
                         Err(e) => eprintln!("warning: failed to deserialize {} - {e}", a.name),
                         Ok(existing_agent) => {
                             let normalized_existing = existing_agent.normalize();
-                            let diff = generated_agent.diff(&normalized_existing);
+                            let diff = normalized_existing.diff(&generated_agent);
                             println!("{}", facet_diff::format_diff_default(&diff));
                         }
                     };

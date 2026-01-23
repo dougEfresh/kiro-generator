@@ -4,7 +4,26 @@ use {
     std::collections::HashSet,
 };
 
-/// Normalized agent for stable diffing with concrete tool types
+/// A normalized representation of an Agent optimized for stable, deterministic
+/// diffing.
+///
+/// This struct addresses the instability issues in `Agent` by:
+/// - Using concrete types instead of `facet_value::Value` for native tools
+/// - Sorting all collections (resources, knowledge) for consistent ordering
+/// - Separating known native tools from custom MCP tools
+///
+/// # Stability Guarantees
+/// - `resources` and `knowledge` are sorted, ensuring identical agents produce
+///   identical diffs
+/// - Native tools (shell, aws, read, write) have concrete types for precise
+///   field-level diffs
+/// - `other_tools` only tracks presence/absence of custom MCP tools (not their
+///   detailed settings)
+///
+/// # Trade-offs
+/// - Custom MCP tool settings changes are not detected (only
+///   additions/removals)
+/// - This is acceptable as custom tools are rare (~1% use case)
 #[derive(Facet, Debug, Clone, Default)]
 pub struct NormalizedAgent {
     pub name: String,
@@ -12,10 +31,10 @@ pub struct NormalizedAgent {
     pub description: Option<String>,
     #[facet(default, skip_serializing_if = Option::is_none)]
     pub prompt: Option<String>,
-    #[facet(default, skip_serializing_if = HashSet::is_empty)]
-    pub tools: HashSet<String>,
-    #[facet(default, skip_serializing_if = HashSet::is_empty)]
-    pub allowed_tools: HashSet<String>,
+    #[facet(default, skip_serializing_if = Vec::is_empty)]
+    pub tools: Vec<String>,
+    #[facet(default, skip_serializing_if = Vec::is_empty)]
+    pub allowed_tools: Vec<String>,
     #[facet(default, skip_serializing_if = Vec::is_empty)]
     pub resources: Vec<String>,
     #[facet(default, skip_serializing_if = Vec::is_empty)]
@@ -66,7 +85,7 @@ impl Agent {
                     Ok(k) => {
                         knowledge.push(k);
                     }
-                    Err(e) => tracing::warn!("unable to decode knowledge '{json}''\n{e}"),
+                    Err(e) => tracing::warn!("unable to decode knowledge '{json}'\n{e}"),
                 };
             }
         }
@@ -74,14 +93,20 @@ impl Agent {
         let mut resources: Vec<_> = resources.into_iter().collect();
         resources.sort();
 
+        let mut tools: Vec<_> = self.tools.into_iter().collect();
+        tools.sort();
+
+        let mut allowed: Vec<_> = self.allowed_tools.into_iter().collect();
+        allowed.sort();
+
         knowledge.sort_by(|a, b| a.name.cmp(&b.name));
 
         NormalizedAgent {
             name: self.name,
             description: self.description,
             prompt: self.prompt,
-            tools: self.tools,
-            allowed_tools: self.allowed_tools,
+            tools,
+            allowed_tools: allowed,
             resources,
             knowledge,
             shell,
@@ -244,12 +269,12 @@ mod tests {
     fn test_normalized_agent_diff_allowed_tools_changed() {
         let agent1 = NormalizedAgent {
             name: "test".to_string(),
-            allowed_tools: HashSet::from(["read".to_string()]),
+            allowed_tools: vec!["read".to_string()],
             ..Default::default()
         };
         let agent2 = NormalizedAgent {
             name: "test".to_string(),
-            allowed_tools: HashSet::from(["read".to_string(), "write".to_string()]),
+            allowed_tools: vec!["read".to_string(), "write".to_string()],
             ..Default::default()
         };
 
