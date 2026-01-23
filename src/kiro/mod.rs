@@ -5,7 +5,8 @@ pub mod tools;
 pub const DEFAULT_AGENT_RESOURCES: &[&str] = &["file://README.md", "file://AGENTS.md"];
 pub const DEFAULT_APPROVE: [&str; 0] = [];
 use {
-    crate::{Result, agent::hook::AgentHook, config::Manifest},
+    crate::{Manifest, Result, kiro::hook::AgentHook},
+    color_eyre::eyre::WrapErr,
     facet::Facet,
     std::{
         collections::{HashMap, HashSet},
@@ -15,7 +16,7 @@ use {
 pub use {custom_tool::CustomToolConfig, hook::KgHook, tools::*};
 
 #[derive(Facet, Debug, Clone, Eq, PartialEq)]
-pub struct Agent {
+pub struct KiroAgent {
     /// Name of the agent
     pub name: String,
     /// This field is not model facing and is mostly here for users to discern
@@ -60,13 +61,13 @@ pub struct Agent {
     pub include_mcp_json: bool,
 }
 
-impl Display for Agent {
+impl Display for KiroAgent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.name)
     }
 }
 
-impl Agent {
+impl KiroAgent {
     pub fn validate(&self) -> Result<()> {
         let schema: serde_json::Value = serde_json::from_str(crate::schema::SCHEMA)?;
         let validator = jsonschema::validator_for(&schema)?;
@@ -83,7 +84,7 @@ impl Agent {
     }
 }
 
-impl TryFrom<&Manifest> for Agent {
+impl TryFrom<&Manifest> for KiroAgent {
     type Error = color_eyre::Report;
 
     fn try_from(value: &Manifest) -> std::result::Result<Self, Self::Error> {
@@ -122,6 +123,24 @@ impl TryFrom<&Manifest> for Agent {
         let extra_tool_settings = value.tool_settings.clone();
         tools_settings.extend(extra_tool_settings);
 
+        // Convert subagents to toolsSettings.subagent format
+        if !value.subagents.allow.is_empty() || !value.subagents.deny.is_empty() {
+            let final_allow: Vec<String> = value
+                .subagents
+                .allow
+                .difference(&value.subagents.deny)
+                .cloned()
+                .collect();
+
+            if !final_allow.is_empty() {
+                let mut subagent_map = HashMap::new();
+                subagent_map.insert("allowedAgents".to_string(), final_allow);
+                let subagent_value = facet_value::to_value(&subagent_map)
+                    .wrap_err("Failed to serialize subagent settings")?;
+                tools_settings.insert("subagent".to_string(), subagent_value);
+            }
+        }
+
         Ok(Self {
             name: value.name.clone(),
             description: value.description.clone(),
@@ -151,7 +170,7 @@ impl TryFrom<&Manifest> for Agent {
     }
 }
 
-impl Default for Agent {
+impl Default for KiroAgent {
     fn default() -> Self {
         Self {
             name: "kiro_default".to_string(),

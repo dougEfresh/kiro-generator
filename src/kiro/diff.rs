@@ -1,5 +1,5 @@
 use {
-    super::{Agent, Knowledge, tools::*},
+    super::{KiroAgent, Knowledge, tools::*},
     facet::Facet,
     std::collections::HashSet,
 };
@@ -47,16 +47,19 @@ pub struct NormalizedAgent {
     pub read: Option<ReadTool>,
     #[facet(default, skip_serializing_if = Option::is_none)]
     pub write: Option<WriteTool>,
+    #[facet(default, skip_serializing_if = Option::is_none)]
+    pub subagent: Option<SubagentTool>,
     #[facet(default, skip_serializing_if = Vec::is_empty)]
     pub other_tools: Vec<String>,
 }
 
-impl Agent {
+impl KiroAgent {
     pub fn normalize(self) -> NormalizedAgent {
         let mut shell = None;
         let mut aws = None;
         let mut read = None;
         let mut write = None;
+        let mut subagent = None;
         let mut other_tools = Vec::new();
 
         for (tool_name, value) in self.tools_settings {
@@ -66,6 +69,7 @@ impl Agent {
                 "aws" => aws = facet_json::from_str(&json).ok(),
                 "read" => read = facet_json::from_str(&json).ok(),
                 "write" => write = facet_json::from_str(&json).ok(),
+                "subagent" => subagent = facet_json::from_str(&json).ok(),
                 _ => {
                     other_tools.push(tool_name);
                 }
@@ -114,6 +118,7 @@ impl Agent {
             aws,
             read,
             write,
+            subagent,
             other_tools,
         }
     }
@@ -121,19 +126,19 @@ impl Agent {
 
 #[cfg(test)]
 mod tests {
-    use {super::*, crate::config::Manifest, facet_diff::FacetDiff};
+    use {super::*, facet_diff::FacetDiff};
 
     #[test]
     fn test_default_agent() -> crate::Result<()> {
-        let agent = Agent {
+        let agent = KiroAgent {
             name: "test".to_string(),
             ..Default::default()
         };
         assert_eq!("test", format!("{agent}"));
 
-        let kg_agent = Manifest::default();
-        let agent = Agent::try_from(&kg_agent)?;
-        assert_eq!(agent.tools, Agent::default().tools);
+        let kg_agent = crate::Manifest::default();
+        let agent = KiroAgent::try_from(&kg_agent)?;
+        assert_eq!(agent.tools, KiroAgent::default().tools);
 
         Ok(())
     }
@@ -304,7 +309,7 @@ mod tests {
     fn test_normalize_malformed_knowledge() {
         use facet_value::Value;
 
-        let agent = Agent {
+        let agent = KiroAgent {
             name: "test".to_string(),
             resources: vec![
                 Value::from("file://valid.md"),

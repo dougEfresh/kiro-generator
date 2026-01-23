@@ -1,9 +1,8 @@
 use {
-    super::manifest::*,
+    super::{KgKnowledge, Result, SubagentConfig, manifest::*, native::NativeTools},
     crate::{
         Fs,
-        agent::{CustomToolConfig, KgHook},
-        config::{ConfigResult, KgKnowledge, native::NativeTools},
+        kiro::{CustomToolConfig, KgHook},
     },
     facet::Facet,
     std::{
@@ -48,6 +47,8 @@ pub struct KgAgentFileDoc {
     /// Welcome message displayed when switching to this agent
     #[facet(default, rename = "welcomeMessage")]
     pub welcome_message: Option<String>,
+    #[facet(default)]
+    pub subagents: SubagentConfig,
 }
 
 impl Manifest {
@@ -56,7 +57,7 @@ impl Manifest {
         name: impl AsRef<str>,
         path: impl AsRef<Path>,
         template: bool,
-    ) -> Option<ConfigResult<Self>> {
+    ) -> Option<Result<Self>> {
         if let Some(result) = super::toml_parse_path::<KgAgentFileDoc>(fs, path) {
             match result {
                 Err(e) => return Some(Err(e)),
@@ -92,6 +93,7 @@ impl Manifest {
             mcp_servers: file_source.mcp_servers,
             keyboard_shortcut: file_source.keyboard_shortcut,
             welcome_message: file_source.welcome_message,
+            subagents: file_source.subagents,
         }
     }
 }
