@@ -5,6 +5,7 @@ if [ -z "$CI" ]; then
   exit 1
 fi
 
+set -e
 KG=./target/debug/kg
 cargo build
 

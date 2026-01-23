@@ -74,7 +74,6 @@ impl Manifest {
         template: bool,
     ) -> Self {
         Self {
-            schema: None,
             name: name.as_ref().to_string(),
             description: file_source.description,
             template,

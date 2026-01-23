@@ -14,8 +14,6 @@ use {
 #[derive(Facet, Clone, Default)]
 #[facet(default, deny_unknown_fields)]
 pub struct Manifest {
-    #[facet(default, rename = "$schema")]
-    pub schema: Option<String>,
     #[facet(default)]
     pub name: String,
     /// Whether this agent is a template. Templates are not written to disk
