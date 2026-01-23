@@ -47,8 +47,8 @@ pub struct NormalizedAgent {
     pub read: Option<ReadTool>,
     #[facet(default, skip_serializing_if = Option::is_none)]
     pub write: Option<WriteTool>,
-    #[facet(default, skip_serializing_if = HashSet::is_empty)]
-    pub other_tools: HashSet<String>,
+    #[facet(default, skip_serializing_if = Vec::is_empty)]
+    pub other_tools: Vec<String>,
 }
 
 impl Agent {
@@ -57,7 +57,7 @@ impl Agent {
         let mut aws = None;
         let mut read = None;
         let mut write = None;
-        let mut other_tools = HashSet::new();
+        let mut other_tools = Vec::new();
 
         for (tool_name, value) in self.tools_settings {
             let json = facet_json::to_string(&value).unwrap_or_default();
@@ -67,11 +67,12 @@ impl Agent {
                 "read" => read = facet_json::from_str(&json).ok(),
                 "write" => write = facet_json::from_str(&json).ok(),
                 _ => {
-                    other_tools.insert(tool_name);
+                    other_tools.push(tool_name);
                 }
             }
         }
 
+        other_tools.sort();
         let mut resources = HashSet::new();
         let mut knowledge: Vec<Knowledge> = Vec::new();
 
