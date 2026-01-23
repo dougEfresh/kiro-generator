@@ -1,4 +1,4 @@
-"$schema" = "https://github.com/dougEfresh/kiro-generator/raw/refs/heads/main/schemas/agent.json"
+"$schema" = "https://raw.githubusercontent.com/dougEfresh/kiro-generator/raw/refs/heads/main/schemas/agent.json"
 
 # Default agent configuration
 description = "Default agent"

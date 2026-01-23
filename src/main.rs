@@ -184,7 +184,7 @@ async fn main() -> Result<()> {
             }
             SchemaCommand::Agent => {
                 let mut s = facet_json_schema::schema_for::<config::agent_file::KgAgentFileDoc>();
-                s.description = Some("Schema for kiro-generator (kg) manifest TOML files".into());
+                s.description = Some("Schema for kiro-generator (kg) agent TOML files".into());
                 s
             }
         };
