@@ -146,7 +146,6 @@ impl Generator {
                     .destination_dir(&a.name)
                     .join(format!("{}.json", a.name));
                 let generated_agent = KiroAgent::try_from(&a)?.normalize();
-
                 if self.fs.exists(&destination) {
                     let existing = self.fs.read_to_string_sync(&destination)?;
                     match facet_json::from_str::<KiroAgent>(&existing) {
