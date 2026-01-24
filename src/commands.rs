@@ -52,7 +52,7 @@ pub struct Args {
     #[arg(long, default_value = "false")]
     pub show_templates: bool,
     /// Format of the console output
-    #[arg(short = 'f', long,  global = true , default_value_t = OutputFormatArg::default())]
+    #[arg(short = 'f', long,  default_value_t = OutputFormatArg::default())]
     pub format: OutputFormatArg,
 }
 
