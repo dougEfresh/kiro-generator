@@ -1,3 +1,6 @@
+mod execute;
+mod runtime;
+
 use {
     crate::output::{ColorOverride, OutputFormat, OutputFormatArg},
     clap::{
@@ -132,7 +135,7 @@ impl Cli {
         }
     }
 
-    pub fn color(&self) -> bool {
+    fn color(&self) -> bool {
         match &self.color_override {
             ColorOverride::Auto => {
                 std::io::stdout().is_terminal()
@@ -144,11 +147,11 @@ impl Cli {
         }
     }
 
-    pub fn dry_run(&self) -> bool {
+    pub(super) fn dry_run(&self) -> bool {
         matches!(self.command, Command::Validate(_))
     }
 
-    pub fn is_local(&self) -> bool {
+    pub(super) fn is_local(&self) -> bool {
         match &self.command {
             Command::Generate(args) => args.local,
             Command::Validate(args) => args.local,
@@ -156,7 +159,7 @@ impl Cli {
         }
     }
 
-    pub fn is_global(&self) -> bool {
+    pub(super) fn is_global(&self) -> bool {
         match &self.command {
             Command::Generate(args) => args.global,
             Command::Validate(args) => args.global,
@@ -164,20 +167,13 @@ impl Cli {
             _ => false,
         }
     }
-
-    /// Return home dir and ~/.kiro/generators/kg.toml
-    pub fn config(&self) -> crate::Result<(PathBuf, PathBuf)> {
-        let home_dir = dirs::home_dir().ok_or(crate::format_err!("unable to find HOME dir"))?;
-        let cfg = home_dir.join(".kiro").join("generators");
-        Ok((home_dir, cfg))
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
+    #[test_log::test]
     fn test_dry_run() {
         let cli = Cli {
             debug: false,
@@ -194,7 +190,7 @@ mod tests {
         assert!(!cli.dry_run());
     }
 
-    #[test]
+    #[test_log::test]
     fn test_is_local() {
         let cli = Cli {
             debug: false,
@@ -209,7 +205,7 @@ mod tests {
         assert!(!cli.is_global());
     }
 
-    #[test]
+    #[test_log::test]
     fn test_is_global() {
         let cli = Cli {
             debug: false,
@@ -224,7 +220,7 @@ mod tests {
         assert!(!cli.is_local());
     }
 
-    #[test]
+    #[test_log::test]
     fn test_color_auto() {
         let cli = Cli {
             debug: false,
@@ -236,7 +232,7 @@ mod tests {
         let _ = cli.color();
     }
 
-    #[test]
+    #[test_log::test]
     fn test_color_always() {
         let cli = Cli {
             debug: false,
@@ -247,7 +243,7 @@ mod tests {
         assert!(cli.color());
     }
 
-    #[test]
+    #[test_log::test]
     fn test_color_never() {
         let cli = Cli {
             debug: false,
@@ -258,7 +254,7 @@ mod tests {
         assert!(!cli.color());
     }
 
-    #[test]
+    #[test_log::test]
     fn test_format_color() {
         let cli = Cli {
             debug: false,
@@ -276,20 +272,5 @@ mod tests {
             ..cli
         };
         assert!(matches!(cli.format_color(), OutputFormat::Json));
-    }
-
-    #[test]
-    fn test_config() {
-        let cli = Cli {
-            debug: false,
-            trace: None,
-            color_override: ColorOverride::Auto,
-            command: Command::default(),
-        };
-        let result = cli.config();
-        assert!(result.is_ok());
-        let (home, cfg) = result.unwrap();
-        assert!(cfg.ends_with(".kiro/generators"));
-        assert!(cfg.starts_with(&home));
     }
 }
