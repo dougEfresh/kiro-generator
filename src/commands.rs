@@ -70,7 +70,7 @@ pub struct GenerateArgs {
     /// Format of the console output
     #[arg(short = 'f', long,  default_value_t = OutputFormatArg::default())]
     pub format: OutputFormatArg,
-    /// Send desktop notification on completion (Linux only)
+    /// Display desktop notification when generation completes or errors
     #[arg(long, default_value = "false")]
     #[cfg(target_os = "linux")]
     pub notify: bool,

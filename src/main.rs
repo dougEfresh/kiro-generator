@@ -19,33 +19,22 @@ use {
     tracing_subscriber::prelude::*,
 };
 pub use {color_eyre::eyre::format_err, generator::ConfigLocation, kg_config::*};
+
 pub type Result<T> = color_eyre::Result<T>;
 #[allow(dead_code)]
 pub(crate) const DOCS_URL: &str = "https://kiro-generator.ai";
 
 #[cfg(target_os = "linux")]
-fn send_notification(send: bool, dry_run: bool, results: &[generator::AgentResult]) -> Result<()> {
+fn send_notification(summary: &str, body: &str, icon: &str) -> Result<()> {
     use notify_rust::Notification;
-    if !send {
-        return Ok(());
-    }
-
-    let (summary, body) = if dry_run {
-        (
-            "kg validate",
-            format!("✓ Validated {} agents", results.len()),
-        )
-    } else {
-        let generated = results.iter().filter(|a| !a.is_template()).count();
-        ("kg generate", format!("✓ Generated {} agents", generated))
-    };
 
     Notification::new()
         .summary(summary)
-        .body(&body)
-        .icon("dialog-information")
+        .body(body)
+        .icon(icon)
         .show()
-        .wrap_err("Failed to send desktop notification")?;
+        .wrap_err("Failed to send desktop notification")
+        .wrap_err("Ensure notification daemon (e.g. mako, dunst) is running")?;
 
     Ok(())
 }
@@ -271,10 +260,24 @@ async fn main() -> Result<()> {
             format.result(dry_run, args.show_templates, results)?;
         }
         Command::Generate(args) => {
-            let results = kq_generator_config.write_all(dry_run).await?;
+            let result = kq_generator_config.write_all(dry_run).await;
+
             #[cfg(target_os = "linux")]
-            send_notification(args.notify, dry_run, &results)?;
-            format.result(dry_run, args.show_templates, results)?;
+            if args.notify {
+                match &result {
+                    Ok(results) => {
+                        let generated = results.iter().filter(|a| !a.is_template()).count();
+                        let body = format!("✓ Generated {} agents", generated);
+                        send_notification("kg generate", &body, "dialog-information")?;
+                    }
+                    Err(e) => {
+                        let body = format!("Error: {e}");
+                        send_notification("kg generate", &body, "dialog-error")?;
+                    }
+                }
+            }
+
+            format.result(dry_run, args.show_templates, result?)?;
         }
         Command::Diff(_) => {
             kq_generator_config.diff()?;
