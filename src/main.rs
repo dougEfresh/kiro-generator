@@ -27,7 +27,7 @@ pub(crate) const DOCS_URL: &str = "https://kiro-generator.ai";
 #[cfg(target_os = "linux")]
 fn send_notification(summary: &str, body: &str, icon: &str) -> Result<()> {
     use notify_rust::Notification;
-
+    debug!("Sending desktop notification {icon}");
     Notification::new()
         .summary(summary)
         .body(body)
