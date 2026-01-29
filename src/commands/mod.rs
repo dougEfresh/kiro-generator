@@ -8,7 +8,7 @@ use {
         Subcommand,
         builder::{Styles, styling::AnsiColor},
     },
-    std::{io::IsTerminal, path::PathBuf},
+    std::{fmt::Display, io::IsTerminal, path::PathBuf},
 };
 
 /// Get the color styles for the CLI help menu.
@@ -113,6 +113,15 @@ pub enum SchemaCommand {
     Manifest,
     /// Output JSON schema for agent definition files
     Agent,
+}
+
+impl Display for SchemaCommand {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self {
+            Self::Manifest => "manifest",
+            Self::Agent => "agent",
+        })
+    }
 }
 
 impl Default for Command {

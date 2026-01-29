@@ -19,7 +19,7 @@ fn build_schema(cmd: &SchemaCommand) -> Result<String> {
     };
     output.description = Some(get_schema_description(cmd).into());
     output.schema = Some("https://json-schema.org/draft/2020-12/schema".into());
-    facet_json::to_string_pretty(&output).wrap_err("unable to generate schema for {cmd}")
+    facet_json::to_string_pretty(&output).wrap_err(format!("unable to generate schema for {cmd}"))
 }
 
 pub(crate) fn handle_schema_command(cmd: &SchemaCommand) -> Result<()> {
