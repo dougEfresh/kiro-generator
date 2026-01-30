@@ -22,7 +22,7 @@ pub use {color_eyre::eyre::format_err, generator::ConfigLocation, kg_config::*};
 
 pub type Result<T> = color_eyre::Result<T>;
 #[allow(dead_code)]
-pub(crate) const DOCS_URL: &str = "https://kiro-generator.ai";
+pub(crate) const DOCS_URL: &str = "https://kiro-generator.io";
 
 fn init_tracing(debug: bool, trace_agent: Option<&str>) {
     let filter = if let Some(agent) = trace_agent {
