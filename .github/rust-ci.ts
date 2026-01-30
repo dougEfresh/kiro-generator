@@ -9,9 +9,7 @@ export default function () {
       profile: 'release',
       os: [Arch.AMD64],
     })
-
     .semver(false)
-    .additionalPrompt(prompt)
     .disableSanitizers()
     .extra('cli-test', 'bash -x ./scripts/test-ci.sh')
     .build();
