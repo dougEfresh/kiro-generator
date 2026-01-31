@@ -116,8 +116,14 @@ impl From<facet_json_schema::JsonSchema> for JsonSchemaOptional {
             items: value.items.map(|b| Box::new((*b).into())),
             enum_: value.enum_,
             // Skip meaningless type bounds (i128::MIN, u128::MAX, etc)
-            minimum: value.minimum.filter(|&v| v != i128::MIN).map(|v| v as f64),
-            maximum: value.maximum.filter(|&v| v != u128::MAX).map(|v| v as f64),
+            minimum: value
+                .minimum
+                .filter(|&v| v > i16::MIN as i128)
+                .map(|v| v as f64),
+            maximum: value
+                .maximum
+                .filter(|&v| v < u16::MAX as u128)
+                .map(|v| v as f64),
             one_of: value
                 .one_of
                 .map(|v| v.into_iter().map(Into::into).collect()),
