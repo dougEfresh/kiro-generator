@@ -1,7 +1,7 @@
-"$schema" = "https://raw.githubusercontent.com/dougEfresh/kiro-generator/raw/refs/heads/main/schemas/agent.json"
-
+"$schema" = "https://kiro-generator.io/agent.json"
 # Default agent configuration
 description = "Default agent"
 tools = ["*"]
 allowedTools = ["read", "knowledge", "web_search"]
 resources = ["file://README.md"]
+blah = "this should fail"
