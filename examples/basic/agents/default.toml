@@ -4,4 +4,3 @@ description = "Default agent"
 tools = ["*"]
 allowedTools = ["read", "knowledge", "web_search"]
 resources = ["file://README.md"]
-blah = "this should fail"
