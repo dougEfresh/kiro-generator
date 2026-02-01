@@ -44,8 +44,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 0,
-                        "maximum": 18446744073709552000
+                        "minimum": 0
                       },
                       {
                         "type": "null"
@@ -69,8 +68,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 0,
-                        "maximum": 4294967295
+                        "minimum": 0
                       },
                       {
                         "type": "null"
@@ -81,8 +79,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 0,
-                        "maximum": 18446744073709552000
+                        "minimum": 0
                       },
                       {
                         "type": "null"
@@ -206,8 +203,7 @@
                   "anyOf": [
                     {
                       "type": "integer",
-                      "minimum": 0,
-                      "maximum": 18446744073709552000
+                      "minimum": 0
                     },
                     {
                       "type": "null"
@@ -247,13 +243,7 @@
                       "type": "string"
                     }
                   },
-                  "deny": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "denyByDefault": {
+                  "autoAllowReadonly": {
                     "anyOf": [
                       {
                         "type": "boolean"
@@ -263,7 +253,13 @@
                       }
                     ]
                   },
-                  "disableAutoReadOnly": {
+                  "deny": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "denyByDefault": {
                     "anyOf": [
                       {
                         "type": "boolean"
@@ -292,13 +288,7 @@
                       "type": "string"
                     }
                   },
-                  "deny": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "denyByDefault": {
+                  "autoAllowReadonly": {
                     "anyOf": [
                       {
                         "type": "boolean"
@@ -308,7 +298,13 @@
                       }
                     ]
                   },
-                  "disableAutoReadOnly": {
+                  "deny": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "denyByDefault": {
                     "anyOf": [
                       {
                         "type": "boolean"
@@ -337,13 +333,7 @@
                       "type": "string"
                     }
                   },
-                  "deny": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "denyByDefault": {
+                  "autoAllowReadonly": {
                     "anyOf": [
                       {
                         "type": "boolean"
@@ -353,7 +343,13 @@
                       }
                     ]
                   },
-                  "disableAutoReadOnly": {
+                  "deny": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "denyByDefault": {
                     "anyOf": [
                       {
                         "type": "boolean"
@@ -382,13 +378,7 @@
                       "type": "string"
                     }
                   },
-                  "deny": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "denyByDefault": {
+                  "autoAllowReadonly": {
                     "anyOf": [
                       {
                         "type": "boolean"
@@ -398,7 +388,13 @@
                       }
                     ]
                   },
-                  "disableAutoReadOnly": {
+                  "deny": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "denyByDefault": {
                     "anyOf": [
                       {
                         "type": "boolean"
