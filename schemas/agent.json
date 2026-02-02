@@ -265,6 +265,96 @@
           "additionalProperties": false,
           "title": "AwsTool"
         },
+        "glob": {
+          "type": "object",
+          "properties": {
+            "allow": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "autoAllowReadonly": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "deny": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "denyByDefault": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "forceAllow": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "title": "GlobTool"
+        },
+        "grep": {
+          "type": "object",
+          "properties": {
+            "allow": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "autoAllowReadonly": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "deny": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "denyByDefault": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "forceAllow": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "title": "GrepTool"
+        },
         "read": {
           "type": "object",
           "properties": {
@@ -354,6 +444,51 @@
           },
           "additionalProperties": false,
           "title": "ExecuteShellTool"
+        },
+        "web-fetch": {
+          "type": "object",
+          "properties": {
+            "allow": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "autoAllowReadonly": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "deny": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "denyByDefault": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "forceAllow": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false,
+          "title": "WebFetchTool"
         },
         "write": {
           "type": "object",

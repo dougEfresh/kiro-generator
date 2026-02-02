@@ -2,7 +2,10 @@ use {
     crate::kiro::{
         AwsTool as KiroAwsTool,
         ExecuteShellTool as KiroShellTool,
+        GlobTool as KiroGlobTool,
+        GrepTool as KiroGrepTool,
         ReadTool as KiroReadTool,
+        WebFetchTool as KiroWebFetchTool,
         WriteTool as KiroWriteTool,
     },
     facet::Facet,
@@ -64,6 +67,9 @@ define_tool!(ExecuteShellTool);
 define_tool!(AwsTool);
 define_tool!(WriteTool);
 define_tool!(ReadTool);
+define_tool!(GlobTool);
+define_tool!(GrepTool);
+define_tool!(WebFetchTool);
 
 #[derive(Facet, Default, Clone, Debug, PartialEq, Eq)]
 #[facet(default, deny_unknown_fields, rename_all = "kebab-case")]
@@ -76,6 +82,12 @@ pub struct NativeTools {
     pub read: ReadTool,
     #[facet(default)]
     pub write: WriteTool,
+    #[facet(default)]
+    pub glob: GlobTool,
+    #[facet(default)]
+    pub grep: GrepTool,
+    #[facet(default)]
+    pub web_fetch: WebFetchTool,
 }
 
 impl NativeTools {
@@ -84,6 +96,9 @@ impl NativeTools {
         self.aws = self.aws.merge(other.aws);
         self.read = self.read.merge(other.read);
         self.write = self.write.merge(other.write);
+        self.glob = self.glob.merge(other.glob);
+        self.grep = self.grep.merge(other.grep);
+        self.web_fetch = self.web_fetch.merge(other.web_fetch);
         self
     }
 }
@@ -94,7 +109,7 @@ impl From<&NativeTools> for KiroAwsTool {
         KiroAwsTool {
             allowed_services: aws.allows.clone(),
             denied_services: aws.denies.clone(),
-            auto_allow_readonly: aws.auto_allow_readonly.unwrap_or(true),
+            auto_allow_readonly: aws.auto_allow_readonly.unwrap_or(false),
         }
     }
 }
@@ -172,6 +187,83 @@ impl From<&NativeTools> for KiroShellTool {
             denied_commands: denies,
             deny_by_default: shell.deny_by_default.unwrap_or(false),
             auto_allow_readonly: shell.auto_allow_readonly.unwrap_or(false),
+        }
+    }
+}
+
+impl From<&NativeTools> for KiroGlobTool {
+    fn from(value: &NativeTools) -> Self {
+        let glob = &value.glob;
+        let mut allows: HashSet<String> = glob.allows.clone();
+        let mut denies: HashSet<String> = glob.denies.clone();
+        if !glob.force_allow.is_empty() {
+            tracing::trace!(
+                "Override/Forcing glob paths: {:?}",
+                glob.force_allow.iter().collect::<Vec<_>>()
+            );
+            for path in glob.force_allow.iter() {
+                allows.insert(path.clone());
+                if denies.remove(path) {
+                    tracing::trace!("Removed from denies: {path}");
+                }
+            }
+        }
+
+        Self {
+            allowed_paths: allows,
+            denied_paths: denies,
+            allow_read_only: glob.auto_allow_readonly.unwrap_or(false),
+        }
+    }
+}
+
+impl From<&NativeTools> for KiroGrepTool {
+    fn from(value: &NativeTools) -> Self {
+        let grep = &value.grep;
+        let mut allows: HashSet<String> = grep.allows.clone();
+        let mut denies: HashSet<String> = grep.denies.clone();
+        if !grep.force_allow.is_empty() {
+            tracing::trace!(
+                "Override/Forcing grep paths: {:?}",
+                grep.force_allow.iter().collect::<Vec<_>>()
+            );
+            for path in grep.force_allow.iter() {
+                allows.insert(path.clone());
+                if denies.remove(path) {
+                    tracing::trace!("Removed from denies: {path}");
+                }
+            }
+        }
+
+        Self {
+            allowed_paths: allows,
+            denied_paths: denies,
+            allow_read_only: grep.auto_allow_readonly.unwrap_or(false),
+        }
+    }
+}
+
+impl From<&NativeTools> for KiroWebFetchTool {
+    fn from(value: &NativeTools) -> Self {
+        let web_fetch = &value.web_fetch;
+        let mut allows: HashSet<String> = web_fetch.allows.clone();
+        let mut denies: HashSet<String> = web_fetch.denies.clone();
+        if !web_fetch.force_allow.is_empty() {
+            tracing::trace!(
+                "Override/Forcing web_fetch trusted: {:?}",
+                web_fetch.force_allow.iter().collect::<Vec<_>>()
+            );
+            for url in web_fetch.force_allow.iter() {
+                allows.insert(url.clone());
+                if denies.remove(url) {
+                    tracing::trace!("Removed from blocked: {url}");
+                }
+            }
+        }
+
+        Self {
+            trusted: allows,
+            blocked: denies,
         }
     }
 }
@@ -287,6 +379,7 @@ forceAllow = ["git push"]
                 force_allow: into_set(vec!["rm -rf /"]),
                 ..Default::default()
             },
+            ..Default::default()
         };
 
         let merged = child.merge(parent.clone());

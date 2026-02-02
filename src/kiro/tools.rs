@@ -9,6 +9,9 @@ pub enum ToolTarget {
     Shell,
     Read,
     Write,
+    Glob,
+    Grep,
+    WebFetch,
 }
 
 impl Display for ToolTarget {
@@ -18,6 +21,9 @@ impl Display for ToolTarget {
             ToolTarget::Shell => write!(f, "shell"),
             ToolTarget::Read => write!(f, "read"),
             ToolTarget::Write => write!(f, "write"),
+            ToolTarget::Glob => write!(f, "glob"),
+            ToolTarget::Grep => write!(f, "grep"),
+            ToolTarget::WebFetch => write!(f, "web_fetch"),
         }
     }
 }
@@ -29,6 +35,9 @@ impl AsRef<str> for ToolTarget {
             ToolTarget::Shell => "shell",
             ToolTarget::Read => "read",
             ToolTarget::Write => "write",
+            ToolTarget::Glob => "glob",
+            ToolTarget::Grep => "grep",
+            ToolTarget::WebFetch => "web_fetch",
         }
     }
 }
@@ -97,6 +106,40 @@ pub struct WriteTool {
     pub allowed_paths: HashSet<String>,
     #[facet(default, skip_serializing_if = HashSet::is_empty)]
     pub denied_paths: HashSet<String>,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Facet, Default, PartialEq, Eq, Clone)]
+#[facet(rename_all = "camelCase", deny_unknown_fields)]
+pub struct GlobTool {
+    #[facet(default, skip_serializing_if = HashSet::is_empty)]
+    pub allowed_paths: HashSet<String>,
+    #[facet(default, skip_serializing_if = HashSet::is_empty)]
+    pub denied_paths: HashSet<String>,
+    #[facet(default)]
+    pub allow_read_only: bool,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Facet, Default, PartialEq, Eq, Clone)]
+#[facet(rename_all = "camelCase", deny_unknown_fields)]
+pub struct GrepTool {
+    #[facet(default, skip_serializing_if = HashSet::is_empty)]
+    pub allowed_paths: HashSet<String>,
+    #[facet(default, skip_serializing_if = HashSet::is_empty)]
+    pub denied_paths: HashSet<String>,
+    #[facet(default)]
+    pub allow_read_only: bool,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Facet, Default, PartialEq, Eq, Clone)]
+#[facet(rename_all = "camelCase", deny_unknown_fields)]
+pub struct WebFetchTool {
+    #[facet(default, skip_serializing_if = HashSet::is_empty)]
+    pub trusted: HashSet<String>,
+    #[facet(default, skip_serializing_if = HashSet::is_empty)]
+    pub blocked: HashSet<String>,
 }
 
 #[derive(Debug, Clone, Facet, Default, PartialEq, Eq)]
