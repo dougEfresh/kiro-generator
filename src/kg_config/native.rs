@@ -109,7 +109,7 @@ impl From<&NativeTools> for KiroAwsTool {
         KiroAwsTool {
             allowed_services: aws.allows.clone(),
             denied_services: aws.denies.clone(),
-            auto_allow_readonly: aws.auto_allow_readonly.unwrap_or(false),
+            auto_allow_readonly: aws.auto_allow_readonly,
         }
     }
 }
@@ -186,7 +186,7 @@ impl From<&NativeTools> for KiroShellTool {
             allowed_commands: allows,
             denied_commands: denies,
             deny_by_default: shell.deny_by_default.unwrap_or(false),
-            auto_allow_readonly: shell.auto_allow_readonly.unwrap_or(false),
+            auto_allow_readonly: shell.auto_allow_readonly,
         }
     }
 }
@@ -461,7 +461,7 @@ forceAllow = ["git push"]
     pub fn test_native_aws_kiro() -> Result<()> {
         let a = NativeTools::default();
         let kiro = KiroAwsTool::from(&a);
-        assert!(!kiro.auto_allow_readonly);
+        assert!(kiro.auto_allow_readonly.is_none());
         assert!(kiro.allowed_services.is_empty());
         assert!(kiro.denied_services.is_empty());
 
@@ -476,7 +476,7 @@ forceAllow = ["git push"]
         };
 
         let kiro = KiroAwsTool::from(&a);
-        assert!(kiro.auto_allow_readonly);
+        assert!(kiro.auto_allow_readonly.unwrap_or_default());
         assert!(kiro.allowed_services.contains("blah"));
         assert!(kiro.denied_services.contains("blahblah"));
         assert_eq!(kiro.allowed_services.len() + kiro.denied_services.len(), 2);
@@ -487,7 +487,7 @@ forceAllow = ["git push"]
     pub fn test_native_shell_kiro() -> Result<()> {
         let a = NativeTools::default();
         let kiro = KiroShellTool::from(&a);
-        assert!(!kiro.auto_allow_readonly);
+        assert!(kiro.auto_allow_readonly.is_none());
         assert!(kiro.allowed_commands.is_empty());
         assert!(kiro.denied_commands.is_empty());
 
@@ -502,7 +502,7 @@ forceAllow = ["git push"]
             ..Default::default()
         };
         let kiro = KiroShellTool::from(&a);
-        assert!(!kiro.auto_allow_readonly);
+        assert!(kiro.auto_allow_readonly.is_none());
         assert_eq!(kiro.allowed_commands.len(), 2);
         assert_eq!(
             kiro.allowed_commands,

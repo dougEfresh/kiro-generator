@@ -43,7 +43,7 @@ impl AsRef<str> for ToolTarget {
 }
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, Facet, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Facet, PartialEq, Eq)]
 #[facet(rename_all = "camelCase", deny_unknown_fields)]
 pub struct AwsTool {
     #[facet(default, skip_serializing_if = HashSet::is_empty)]
@@ -51,21 +51,11 @@ pub struct AwsTool {
     #[facet(default, skip_serializing_if = HashSet::is_empty)]
     pub denied_services: HashSet<String>,
     #[facet(default)]
-    pub auto_allow_readonly: bool,
-}
-
-impl Default for AwsTool {
-    fn default() -> Self {
-        Self {
-            allowed_services: Default::default(),
-            denied_services: Default::default(),
-            auto_allow_readonly: true,
-        }
-    }
+    pub auto_allow_readonly: Option<bool>,
 }
 
 #[allow(dead_code)]
-#[derive(Debug, Facet, PartialEq, Eq, Clone)]
+#[derive(Debug, Default, Facet, PartialEq, Eq, Clone)]
 #[facet(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ExecuteShellTool {
     #[facet(default, skip_serializing_if = HashSet::is_empty)]
@@ -74,18 +64,8 @@ pub struct ExecuteShellTool {
     pub denied_commands: HashSet<String>,
     #[facet(default)]
     pub deny_by_default: bool,
-    pub auto_allow_readonly: bool,
-}
-
-impl Default for ExecuteShellTool {
-    fn default() -> Self {
-        Self {
-            allowed_commands: Default::default(),
-            denied_commands: Default::default(),
-            deny_by_default: false,
-            auto_allow_readonly: true,
-        }
-    }
+    #[facet(default, skip_serializing_if = Option::is_none)]
+    pub auto_allow_readonly: Option<bool>,
 }
 
 #[allow(dead_code)]
@@ -159,7 +139,7 @@ pub struct NormalizedAwsTool {
     #[facet(default, skip_serializing_if = Vec::is_empty)]
     pub denied_services: Vec<String>,
     #[facet(default)]
-    pub auto_allow_readonly: bool,
+    pub auto_allow_readonly: Option<bool>,
 }
 
 impl From<AwsTool> for NormalizedAwsTool {
@@ -185,7 +165,7 @@ pub struct NormalizedExecuteShellTool {
     pub denied_commands: Vec<String>,
     #[facet(default)]
     pub deny_by_default: bool,
-    pub auto_allow_readonly: bool,
+    pub auto_allow_readonly: Option<bool>,
 }
 
 impl From<ExecuteShellTool> for NormalizedExecuteShellTool {
@@ -283,7 +263,7 @@ mod tests {
     #[test]
     fn aws_tool_default() {
         let tool = AwsTool::default();
-        assert!(tool.auto_allow_readonly);
+        assert!(tool.auto_allow_readonly.is_none());
         assert!(tool.allowed_services.is_empty());
     }
 
@@ -291,7 +271,7 @@ mod tests {
     fn execute_shell_tool_default() {
         let tool = ExecuteShellTool::default();
         assert!(!tool.deny_by_default);
-        assert!(tool.auto_allow_readonly);
+        assert!(tool.auto_allow_readonly.is_none());
     }
 
     #[test]
