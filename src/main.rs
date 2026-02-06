@@ -31,7 +31,7 @@ pub(crate) const DOCS_URL: &str = "https://kiro-generator.io";
 ///
 /// # Arguments
 /// * `fs` - Filesystem abstraction for testability
-/// * `gen_dir` - Target directory path
+/// * `home_dir` - Target home directory path
 ///
 /// # Errors
 /// Returns an error if:

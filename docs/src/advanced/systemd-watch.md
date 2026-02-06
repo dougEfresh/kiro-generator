@@ -69,7 +69,7 @@ These map to CLI flags via clap's `env` attribute:
 
 ## Prerequisites
 
-The systemd unit files must be installed in `~/.config/systemd/user/` before `kg watch` can enable them. See the project's `examples/basic/systemd/` for reference.
+The systemd unit files must be installed in `~/.config/systemd/user/` before `kg watch` can enable them. See the project's `resources/systemd/` for reference.
 
 ## Listing and Disabling
 
