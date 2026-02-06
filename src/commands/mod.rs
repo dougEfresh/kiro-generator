@@ -71,10 +71,10 @@ pub struct GenerateArgs {
     #[arg(long, default_value = "false")]
     pub show_templates: bool,
     /// Always write agent config even if nothing has changed
-    #[arg(long, default_value = "false")]
+    #[arg(long, default_value = "false", env = "KG_FORCE")]
     pub force: bool,
     /// Show diff of changes before writing
-    #[arg(long, default_value = "false")]
+    #[arg(long, default_value = "false", env = "KG_DIFF")]
     pub diff: bool,
     /// Format of the console output
     #[arg(short = 'f', long,  default_value_t = OutputFormatArg::default(), env = "KG_FORMAT")]

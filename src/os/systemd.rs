@@ -1,3 +1,5 @@
+use std::fmt::Write;
+
 /// Escape a filesystem path for use as a systemd unit instance name.
 ///
 /// Implements the same algorithm as `systemd-escape --path`:
@@ -24,8 +26,6 @@ pub fn escape_path(path: &str) -> String {
     }
     out
 }
-
-use std::fmt::Write;
 
 #[cfg(test)]
 mod tests {

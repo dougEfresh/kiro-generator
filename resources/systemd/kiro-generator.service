@@ -13,7 +13,6 @@ StandardError=journal
 # Environment
 EnvironmentFile-="%E/kg/systemd/global.env"
 EnvironmentFile-="%E/kg/systemd/home.env"
-#Environment="""
 
 # Security hardening
 PrivateTmp=yes
