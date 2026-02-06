@@ -1,0 +1,24 @@
+[Unit]
+Description=Kiro Generator for %I
+
+[Service]
+Type=oneshot
+WorkingDirectory=%I
+ExecStartPre=/usr/bin/dbus-update-activation-environment --systemd --all
+ExecStart=/usr/bin/kg generate
+TimeoutStartSec=1min
+StandardOutput=journal
+StandardError=journal
+
+# Environment
+EnvironmentFile-="%h/.config/kg/systemd/%i.env"
+#Environment="""
+
+# Security hardening
+PrivateTmp=yes
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=%h/.kiro %I/.kiro
+
+[Install]
+WantedBy=graphical-session.target
