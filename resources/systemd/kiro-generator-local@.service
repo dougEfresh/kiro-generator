@@ -18,7 +18,7 @@ EnvironmentFile-="%E/kg/systemd/%i.env"
 PrivateTmp=yes
 NoNewPrivileges=yes
 ProtectSystem=strict
-ReadWritePaths=%h/.kiro %I/.kiro
+ReadWritePaths=%I/.kiro
 
 [Install]
 WantedBy=graphical-session.target
