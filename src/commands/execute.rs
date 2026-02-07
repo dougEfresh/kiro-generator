@@ -1,5 +1,5 @@
 use {
-    super::{Cli, Command, GenerateArgs, ValidateArgs},
+    super::{Cli, Command, GenerateArgs, ValidateArgs, tree::execute_tree},
     crate::{Result, generator::Generator},
     color_eyre::eyre::Context,
     tracing::debug,
@@ -18,6 +18,7 @@ impl Cli {
             Command::Generate(args) => self.execute_generate(generator, args).await,
             Command::Diff(_) => generator.diff(),
             Command::Watch(args) => execute_watch(args).await,
+            Command::Tree(args) => execute_tree(generator, args).await,
             _ => Ok(()),
         }
     }

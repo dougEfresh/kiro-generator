@@ -1,5 +1,6 @@
 mod execute;
 mod runtime;
+mod tree;
 #[cfg(target_os = "linux")]
 mod watch_linux;
 #[cfg(not(target_os = "linux"))]
@@ -105,6 +106,21 @@ pub struct WatchArgs {
     pub path: Option<PathBuf>,
 }
 
+#[derive(clap::Args, Clone, Default)]
+pub struct TreeArgs {
+    /// Show only global agents
+    #[arg(short, long)]
+    pub global: bool,
+    /// Show only local agents
+    #[arg(short, long)]
+    pub local: bool,
+    /// Output as JSON
+    #[arg(long)]
+    pub json: bool,
+    /// Show specific agent and its inheritance chain
+    pub agent: Option<String>,
+}
+
 #[derive(Subcommand, Clone)]
 pub enum Command {
     /// Validate the agent configuration files but do not generate kiro agents
@@ -130,6 +146,9 @@ pub enum Command {
     /// changes
     #[command(alias = "w")]
     Watch(WatchArgs),
+    /// Display agent hierarchy and configuration sources as a tree
+    #[command(alias = "t")]
+    Tree(TreeArgs),
 }
 
 #[derive(Subcommand, Clone)]

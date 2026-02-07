@@ -50,6 +50,7 @@ jsonschema = { version = "0.40", default-features = false, features = [
   "resolve-file"
 ] }
 # facet-core = { git = "https://github.com/facet-rs/facet", branch = "main", version = "0.43" }
+ptree = "0.5.0"
 rediff = { git = "https://github.com/bearcove/rediff.git", branch = "main", version = "1.0.0" }
 serde_json = { version = "1" }
 serde_yaml2 = "0.1.3"

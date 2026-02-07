@@ -109,11 +109,11 @@ impl OutputFormat {
                             .set_colspan(4)
                             .set_alignment(CellAlignment::Center),
                     ]);
-                for (name, agent_sources) in sources.iter() {
-                    let mut row: Vec<Cell> = vec![Cell::new(name.to_string())];
-                    row.extend(agent_sources.iter().map(|s| s.to_cell()));
-                    table.add_row(row);
-                }
+                // for (name, agent_sources) in sources.iter() {
+                //     let mut row: Vec<Cell> = vec![Cell::new(name.to_string())];
+                //     row.extend(agent_sources.iter().map(|s| s.to_cell()));
+                //     table.add_row(row);
+                // }
                 eprintln!("{table}");
                 Ok(())
             }
