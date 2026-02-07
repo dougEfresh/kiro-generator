@@ -18,7 +18,7 @@ impl Cli {
             Command::Generate(args) => self.execute_generate(generator, args).await,
             Command::Diff(_) => generator.diff(),
             Command::Watch(args) => execute_watch(args).await,
-            Command::Tree(args) => execute_tree(generator, args).await,
+            Command::Tree(args) => execute_tree(generator, args),
             _ => Ok(()),
         }
     }

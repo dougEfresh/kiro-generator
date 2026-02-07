@@ -23,10 +23,10 @@ Before reading or modifying any config files, run discovery to understand the cu
 
 ```bash
 # Structured output for agents (recommended)
-kg tree --json
+kg tree
 
 # Single agent with full detail
-kg tree --json rust
+kg tree rust
 
 # Human-readable tree with inheritance visualization
 kg tree
@@ -146,7 +146,13 @@ When resolving agent `rust`, kg searches (lowest to highest precedence):
 3. `.kiro/generators/manifests/*.toml` - Local declarations
 4. `.kiro/generators/agents/rust.toml` - Local config
 
-All found configs merge together. Use `kg tree --json rust` to see which sources apply.
+All found configs merge together. Use `kg tree rust` to see which sources apply.
+
+## Error States
+
+- **No agents found**: `kg tree` returns non-zero exit code with error: `No agents found`
+- **Named agent not found**: `kg tree nonexistent` returns non-zero exit code with error: `Agent 'nonexistent' not found`
+- **Invalid TOML**: `kg validate` reports parse errors with file path and line number
 
 ## Common Patterns
 

@@ -108,17 +108,8 @@ pub struct WatchArgs {
 
 #[derive(clap::Args, Clone, Default)]
 pub struct TreeArgs {
-    /// Show only global agents
-    #[arg(short, long)]
-    pub global: bool,
-    /// Show only local agents
-    #[arg(short, long)]
-    pub local: bool,
-    /// Output as JSON
-    #[arg(long)]
-    pub json: bool,
-    /// Show specific agent and its inheritance chain
-    pub agent: Option<String>,
+    /// Show specific agents and their inheritance chains
+    pub agents: Vec<String>,
 }
 
 #[derive(Subcommand, Clone)]

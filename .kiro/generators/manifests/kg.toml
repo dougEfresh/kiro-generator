@@ -4,7 +4,7 @@ resources = [
   "file://docs/src/**/*.md",
   "file://AGENTS.md",
   "file://README.md",
-  "file://resouces/SKILL.md",
+  "file://resources/SKILL.md",
 ]
 
 [agents.kg-resources.knowledge.kiro]
