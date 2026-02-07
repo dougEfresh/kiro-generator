@@ -13,13 +13,8 @@ pub(super) fn execute_tree(generator: &Generator, args: &TreeArgs) -> Result<()>
         .collect();
 
     if agents.is_empty() {
-        if !args.agents.is_empty() {
-            return Err(color_eyre::eyre::eyre!(
-                "Agent(s) not found: {}",
-                args.agents.join(", ")
-            ));
-        }
-        return Err(color_eyre::eyre::eyre!("No agents found"));
+        println!("{{}}");
+        return Ok(());
     }
 
     print_json(&agents, &resolved.sources)
