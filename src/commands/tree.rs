@@ -3,7 +3,7 @@ use {
     crate::{Manifest, Result, generator::Generator, source::KdlSources},
 };
 
-pub(super) fn execute_tree(generator: &Generator, args: &TreeArgs) -> Result<()> {
+pub(super) fn execute_tree(generator: &Generator, args: &TreeArgs) -> Result<facet_value::Value> {
     let resolved = &generator.resolved;
 
     let agents: Vec<(&String, &Manifest)> = resolved
@@ -13,14 +13,13 @@ pub(super) fn execute_tree(generator: &Generator, args: &TreeArgs) -> Result<()>
         .collect();
 
     if agents.is_empty() {
-        println!("{{}}");
-        return Ok(());
+        return Ok(facet_value::Value::from(facet_value::VObject::new()));
     }
 
-    print_json(&agents, &resolved.sources)
+    build_json(&agents, &resolved.sources)
 }
 
-fn print_json(agents: &[(&String, &Manifest)], sources: &KdlSources) -> Result<()> {
+fn build_json(agents: &[(&String, &Manifest)], sources: &KdlSources) -> Result<facet_value::Value> {
     let mut obj = facet_value::VObject::new();
     for (name, manifest) in agents {
         let mut agent = facet_value::VObject::new();
@@ -52,7 +51,5 @@ fn print_json(agents: &[(&String, &Manifest)], sources: &KdlSources) -> Result<(
         agent.insert("inherits", facet_value::Value::from(inherits));
         obj.insert(name.as_str(), facet_value::Value::from(agent));
     }
-    let root = facet_value::Value::from(obj);
-    println!("{}", facet_json::to_string_pretty(&root)?);
-    Ok(())
+    Ok(facet_value::Value::from(obj))
 }

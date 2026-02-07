@@ -18,7 +18,11 @@ impl Cli {
             Command::Generate(args) => self.execute_generate(generator, args).await,
             Command::Diff(_) => generator.diff(),
             Command::Watch(args) => execute_watch(args).await,
-            Command::Tree(args) => execute_tree(generator, args),
+            Command::Tree(args) => {
+                let value = execute_tree(generator, args)?;
+                println!("{}", facet_json::to_string_pretty(&value)?);
+                Ok(())
+            }
             _ => Ok(()),
         }
     }
@@ -130,7 +134,7 @@ mod tests {
 
     #[tokio::test]
     #[test_log::test]
-    async fn test_tree_nonexistent_returns_ok() -> Result<()> {
+    async fn test_tree_nonexistent_returns_empty() -> Result<()> {
         let fs = Fs::new();
         let generator = Generator::new(
             fs,
@@ -140,7 +144,8 @@ mod tests {
         let args = super::super::TreeArgs {
             agents: vec!["nonexistent".to_string()],
         };
-        assert!(execute_tree(&generator, &args).is_ok());
+        let value = execute_tree(&generator, &args)?;
+        assert_eq!(value, facet_value::Value::from(facet_value::VObject::new()));
         Ok(())
     }
 
@@ -156,7 +161,10 @@ mod tests {
         let args = super::super::TreeArgs {
             agents: vec!["base".to_string(), "dependabot".to_string()],
         };
-        assert!(execute_tree(&generator, &args).is_ok());
+        let value = execute_tree(&generator, &args)?;
+        let obj = value.as_object().expect("expected object");
+        assert!(obj.get("base").is_some(), "base agent missing");
+        assert!(obj.get("dependabot").is_some(), "dependabot agent missing");
         Ok(())
     }
 }
