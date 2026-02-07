@@ -6,7 +6,6 @@ compatibility: Requires access to user's kg configuration files in ~/.kiro/gener
 metadata:
   version: 0.1.0
   author: agents
-  scope: read-write
 ---
 
 ## What is kg?
@@ -22,14 +21,14 @@ metadata:
 Before reading or modifying any config files, run discovery to understand the current setup:
 
 ```bash
-# Structured output for agents (recommended)
+# Show all agents
 kg tree
 
-# Single agent with full detail
+# Single agent
 kg tree rust
 
-# Human-readable tree with inheritance visualization
-kg tree
+# Multiple agents
+kg tree rust node
 ```
 
 Example JSON output:
