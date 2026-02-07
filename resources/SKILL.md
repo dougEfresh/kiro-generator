@@ -149,8 +149,8 @@ All found configs merge together. Use `kg tree rust` to see which sources apply.
 
 ## Error States
 
-- **No agents found**: `kg tree` returns non-zero exit code with error: `No agents found`
-- **Named agent not found**: `kg tree nonexistent` returns non-zero exit code with error: `Agent 'nonexistent' not found`
+- **No agents found**: `kg tree` returns empty JSON object `{}` (exit 0). Consumers should check for an empty object.
+- **Named agent not found**: `kg tree nonexistent` returns empty JSON object `{}` (exit 0). The requested agent key will be absent from the response.
 - **Invalid TOML**: `kg validate` reports parse errors with file path and line number
 
 ## Common Patterns
