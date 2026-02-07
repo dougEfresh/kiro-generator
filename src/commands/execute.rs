@@ -127,4 +127,36 @@ mod tests {
         cli.execute(&generator).await?;
         Ok(())
     }
+
+    #[tokio::test]
+    #[test_log::test]
+    async fn test_tree_nonexistent_returns_ok() -> Result<()> {
+        let fs = Fs::new();
+        let generator = Generator::new(
+            fs,
+            crate::ConfigLocation::Local,
+            crate::output::OutputFormat::Json,
+        )?;
+        let args = super::super::TreeArgs {
+            agents: vec!["nonexistent".to_string()],
+        };
+        assert!(execute_tree(&generator, &args).is_ok());
+        Ok(())
+    }
+
+    #[tokio::test]
+    #[test_log::test]
+    async fn test_tree_known_agents() -> Result<()> {
+        let fs = Fs::new();
+        let generator = Generator::new(
+            fs,
+            crate::ConfigLocation::Local,
+            crate::output::OutputFormat::Json,
+        )?;
+        let args = super::super::TreeArgs {
+            agents: vec!["base".to_string(), "dependabot".to_string()],
+        };
+        assert!(execute_tree(&generator, &args).is_ok());
+        Ok(())
+    }
 }
